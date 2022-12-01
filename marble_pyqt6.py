@@ -27,6 +27,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/11/07 JP - dokončení a vytvoření funkcí nova_hra_stisk, animuj, krok_presun, herni_kolo
 # # 2022/11/08 JP - ladění chyb
 # # 2022/11/09 JP - výměna labelů pro zobrazování bodů za LCD
+# # 2022/12/01 JP - animace zmizení řady
 ################################
 
 import marble_funkce
@@ -61,6 +62,8 @@ class MainWindow(QMainWindow):
         self.pauza.timeout.connect(self.konec_pauzy)
         self.pauza_presun=QTimer()
         self.pauza_presun.timeout.connect(self.krok_presun)
+        self.pauza_az= QTimer()
+        self.pauza_az.timeout.connect(self.animuj_zmizeni)
         
         # načtení obrázků barev
         for i in range(pocet_barev + 1):
@@ -167,7 +170,7 @@ class MainWindow(QMainWindow):
         pole[cesta[-1][0]][cesta[-1][1]] = pole[cesta[0][0]][cesta[0][1]]
         pole[cesta[0][0]][cesta[0][1]] = 0
         presun = 0
-        self.pauza_presun.start(animacni_cas)
+        self.pauza_presun.start(cas_posunu)
     
     def krok_presun(self):
         global presun
@@ -179,8 +182,22 @@ class MainWindow(QMainWindow):
             kulicky[cesta[presun+1][0]][cesta[presun+1][1]].setPixmap(barva[pole[cesta[-1][0]][cesta[-1][1]]])        
             presun += 1
     
+    def animuj_zmizeni(self):
+        # animace smazání řady
+        global hrac_je_na_tahu, krok_animace_zmizeni
+        #self.prekresli_obraz()
+        krok_animace_zmizeni += 1
+        if krok_animace_zmizeni <= pocet_barev and krok_animace_zmizeni <= 5:
+            for misto in smazat_mista:
+                kulicky[misto[0]][misto[1]].setPixmap(barva[krok_animace_zmizeni])
+        else:
+            for misto in smazat_mista:
+                kulicky[misto[0]][misto[1]].setPixmap(barva[0])
+            self.pauza_az.stop()      
+            hrac_je_na_tahu = True
+    
     def herni_kolo(self):
-        global pole, smazat_mista, pocet_bodu, body, hrac_je_na_tahu, hra
+        global pole, smazat_mista, pocet_bodu, body, hrac_je_na_tahu, hra, dokoncena_animace, krok_animace_zmizeni
         smazat_mista, pocet_bodu = marble_funkce.zkontroluj_rady(pole, min_rada, zisk)
         if pocet_bodu == 0:
             pole = marble_funkce.pridej_kulicky(pole, prirustek, pocet_barev)
@@ -188,17 +205,21 @@ class MainWindow(QMainWindow):
             smazat_mista, pocet_bodu = marble_funkce.zkontroluj_rady(pole, min_rada, zisk)
         body += pocet_bodu
         self.lcd.display(body)
-        # smazání řady, v budoucnu dodělat s nějakým efektem
-        for misto in smazat_mista:
-            pole[misto[0]][misto[1]] = 0
-        self.prekresli_obraz()
-        hrac_je_na_tahu = True
-        # pokud se pole zaplnilo, ukonči hru
-        if marble_funkce.je_pole_plne(pole):
-            print(body)
-            hra = False
-            self.Nova_hra_button.setText(text_nova_hra)
-            self.Nastaveni_button.setEnabled(True)
+        if len(smazat_mista) > 0:
+            # smazání řady
+            for misto in smazat_mista:
+                pole[misto[0]][misto[1]] = 0
+            krok_animace_zmizeni = 0
+            self.pauza_az.start(rychlost_animace)
+        else:
+            # pokud se pole zaplnilo, ukonči hru
+            if marble_funkce.je_pole_plne(pole):
+                print(body)
+                hra = False
+                self.Nova_hra_button.setText(text_nova_hra)
+                self.Nastaveni_button.setEnabled(True)
+            else:
+                hrac_je_na_tahu = True
 
 sirka_matice, pocet_barev, prirustek, min_rada, zisk, jazyk = marble_funkce.nacti_data()   # načtení proměnných které je možné měnit v nastavení
 pole = marble_funkce.vytvor_pole(sirka_matice)  # vytvoření pole
@@ -206,8 +227,8 @@ pole = marble_funkce.vytvor_pole(sirka_matice)  # vytvoření pole
 adresa_obrazku = 'images/a'
 adresa_vybranych_obrazku = 'images/a1'
 sirka_pole = 50
-body, presun = 0, 0
-animacni_cas, cas_pauzy = 50, 500
+body, presun, krok_animace_zmizeni = 0, 0, 0
+cas_posunu, cas_pauzy, rychlost_animace = 50, 500,50
 odsazeni_shora, odsazeni_zleva = 39, 9
 barva, barva_vyber, kulicky, vybrana_kulicka_pozice, cil_pozice = [], [], [], [], []
 hra, hrac_je_na_tahu, vybrana_kulicka = False, False, False
@@ -233,4 +254,3 @@ app.exec()
 
 # CO DODĚLAT
 # občas nepřesune kuličku a jede dál - prověřit
-# dát pauzu mezi vložení nových kuliček a smazání "samo" vzniklých řad, ať je vidět co se děje
