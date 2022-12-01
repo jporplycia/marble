@@ -185,14 +185,10 @@ class MainWindow(QMainWindow):
     def animuj_zmizeni(self):
         # animace smazání řady
         global hrac_je_na_tahu, krok_animace_zmizeni
-        #self.prekresli_obraz()
-        krok_animace_zmizeni += 1
-        if krok_animace_zmizeni <= pocet_barev and krok_animace_zmizeni <= 5:
-            for misto in smazat_mista:
-                kulicky[misto[0]][misto[1]].setPixmap(barva[krok_animace_zmizeni])
+        if krok_animace_zmizeni < len(smazat_mista):
+            kulicky[smazat_mista[krok_animace_zmizeni][0]][smazat_mista[krok_animace_zmizeni][1]].setPixmap(barva[0])
+            krok_animace_zmizeni += 1
         else:
-            for misto in smazat_mista:
-                kulicky[misto[0]][misto[1]].setPixmap(barva[0])
             self.pauza_az.stop()      
             hrac_je_na_tahu = True
     
