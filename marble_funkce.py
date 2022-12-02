@@ -39,8 +39,12 @@ def nacti_data():
     prirustek = 3
     min_rada = 5
     zisk = [1,3,6,12,24,48,96]
-    jazyk = 'lang_cz'
-    return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, jazyk)
+    adresa_obrazku = 'images/a'
+    adresa_vybranych_obrazku = 'images/a1'
+    cas_posunu = 50
+    cas_pauzy = 500
+    rychlost_animace = 50
+    return(sirka_matice, pocet_barev, prirustek, min_rada, zisk,adresa_obrazku,adresa_vybranych_obrazku,cas_posunu,cas_pauzy,rychlost_animace)
 
 def vytvor_pole(sirka_matice):
     # vytvoří pole a nastaví všem polím hodnotu 0
