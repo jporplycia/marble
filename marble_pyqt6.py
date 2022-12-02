@@ -28,7 +28,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/11/08 JP - ladění chyb
 # # 2022/11/09 JP - výměna labelů pro zobrazování bodů za LCD
 # # 2022/12/01 JP - animace zmizení řady
-# # 2022/12/02 JP - úpravy proměnných, vylazení a příprava pro načítání ze/do souboru
+# # 2022/12/02 JP - úpravy proměnných, vylazení a příprava pro načítání ze/do souboru, vytvoření souboru a zprovoznění načítání a ukládání
 ################################
 
 import marble_funkce

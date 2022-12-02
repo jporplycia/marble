@@ -27,24 +27,59 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/10/27 JP - dokončení funkce najdi_cestu(), vytvoření podfunkce kontrola(), přejmenování souboru na marble_funkce.py a smazání všeho kromě potřebných funkcí
 # # 2022/10/27 JP - původní soubor ponechán pod názvem marble_puvodni.py
 # # 2022/11/16 JP - oprava vyhledávání řad i v krajních pozicích
+# # 2022/12/02 JP - ukládání a načtení dat ze souboru
 ################################
 
 from random import sample
 import random
+import configparser
 
 def nacti_data():
-    # nastavení základních proměnných
-    sirka_matice = 8
-    pocet_barev = 8
-    prirustek = 3
-    min_rada = 5
-    zisk = [1,3,6,12,24,48,96]
-    adresa_obrazku = 'images/a'
-    adresa_vybranych_obrazku = 'images/a1'
-    cas_posunu = 50
-    cas_pauzy = 500
-    rychlost_animace = 50
-    return(sirka_matice, pocet_barev, prirustek, min_rada, zisk,adresa_obrazku,adresa_vybranych_obrazku,cas_posunu,cas_pauzy,rychlost_animace)
+    # načte nastavení proměnných ze souboru   -------- dopsat ce dělat při neexistenci souboru nebo chybě v něm -------------
+    try:
+        config = configparser.ConfigParser()
+        config.read('data.conf')
+        sirka_matice = int(config.get('Nastaveni','sirka_matice', fallback = 8))
+        pocet_barev = int(config.get('Nastaveni','pocet_barev', fallback = 8))
+        prirustek = int(config.get('Nastaveni','prirustek', fallback = 3))
+        min_rada = int(config.get('Nastaveni','min_rada', fallback = 5))
+        zisk = [int(n) for n in config.get('Nastaveni','zisk', fallback = '1, 3, 6, 12, 24, 48, 96').split(',')]
+        adresa_obrazku = config.get('Nastaveni','adresa_obrazku', fallback = 'images/a')
+        adresa_vybranych_obrazku = config.get('Nastaveni','adresa_vybranych_obrazku', fallback = 'images/a1')
+        cas_posunu = int(config.get('Nastaveni','cas_posunu', fallback = 50))
+        cas_pauzy = int(config.get('Nastaveni','cas_pauzy', fallback = 500))
+        rychlost_animace = int(config.get('Nastaveni','rychlost_animace', fallback = 50))
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
+    except:
+        print('chyba souboru, vytvořen nový')
+        sirka_matice = 8
+        pocet_barev = 8
+        prirustek = 3
+        min_rada = 5
+        zisk = [1, 3, 6, 12, 24, 48, 96]
+        adresa_obrazku = 'images/a'
+        adresa_vybranych_obrazku = 'images/a1'
+        cas_posunu = 50
+        cas_pauzy = 500
+        rychlost_animace = 50
+        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
+
+def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace):
+    #uloží nastavení proměnných do souboru
+    config = configparser.ConfigParser()
+    config['Nastaveni'] = {'sirka_matice': sirka_matice, 
+                        'pocet_barev': pocet_barev,
+                        'prirustek': prirustek,
+                        'min_rada': min_rada,
+                        'zisk': str(zisk)[1:-1],
+                        'adresa_obrazku': adresa_obrazku,
+                        'adresa_vybranych_obrazku': adresa_vybranych_obrazku,
+                        'cas_posunu': cas_posunu,
+                        'cas_pauzy': cas_pauzy,
+                        'rychlost_animace': rychlost_animace}
+    with open('data.conf', 'w') as configfile:
+        config.write(configfile)
 
 def vytvor_pole(sirka_matice):
     # vytvoří pole a nastaví všem polím hodnotu 0
