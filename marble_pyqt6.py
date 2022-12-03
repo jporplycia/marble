@@ -29,10 +29,10 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/11/09 JP - výměna labelů pro zobrazování bodů za LCD
 # # 2022/12/01 JP - animace zmizení řady
 # # 2022/12/02 JP - úpravy proměnných, vylazení a příprava pro načítání ze/do souboru, vytvoření souboru a zprovoznění načítání a ukládání
+# # 2022/12/03 JP - přidání popisků do ukládání dat do souboru
 ################################
 
 import marble_funkce
-import language
 
 import sys, time
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QLCDNumber
@@ -220,15 +220,8 @@ class MainWindow(QMainWindow):
                 self.hrac_je_na_tahu = True
 
 
-# Načtení proměnných které je možné měnit v nastavení
-sirka_matice, pocet_barev, prirustek, min_rada, zisk,adresa_obrazku,adresa_vybranych_obrazku,cas_posunu,cas_pauzy,rychlost_animace = marble_funkce.nacti_data()
-
-# Nastavení popisků, dodělat tak, aby se načítaly z jazykového souboru
-text_nova_hra = "Začni hrát"
-text_konec_hry = "Ukonči hru"
-text_hlavni_okno = "Marble"
-text_pocet_bodu = "Počet bodů: "
-text_nastaveni = "Nastavení"
+# Načtení proměnných které je možné měnit v nastavení a popisků
+sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni = marble_funkce.nacti_data()
 
 # a jedeeem
 app = QApplication(sys.argv)

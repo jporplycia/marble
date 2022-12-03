@@ -28,6 +28,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/10/27 JP - původní soubor ponechán pod názvem marble_puvodni.py
 # # 2022/11/16 JP - oprava vyhledávání řad i v krajních pozicích
 # # 2022/12/02 JP - ukládání a načtení dat ze souboru
+# # 2022/12/03 JP - přidání popisků do ukládání dat do souboru
 ################################
 
 from random import sample
@@ -35,7 +36,7 @@ import random
 import configparser
 
 def nacti_data():
-    # načte nastavení proměnných ze souboru   -------- dopsat ce dělat při neexistenci souboru nebo chybě v něm -------------
+    # načte nastavení proměnných ze souboru
     try:
         config = configparser.ConfigParser()
         config.read('data.conf')
@@ -49,7 +50,11 @@ def nacti_data():
         cas_posunu = int(config.get('Nastaveni','cas_posunu', fallback = 50))
         cas_pauzy = int(config.get('Nastaveni','cas_pauzy', fallback = 500))
         rychlost_animace = int(config.get('Nastaveni','rychlost_animace', fallback = 50))
-        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
+        text_hlavni_okno = config.get('CZ','text_hlavni_okno', fallback = 'Marble')
+        text_nova_hra = config.get('CZ','text_nova_hra', fallback = 'Začni hrát')
+        text_konec_hry = config.get('CZ','text_konec_hry', fallback = 'Ukonči hru')
+        text_nastaveni = config.get('CZ','text_nastaveni', fallback = 'Nastavení')
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni)
     except:
         print('chyba souboru, vytvořen nový')
         sirka_matice = 8
@@ -62,10 +67,14 @@ def nacti_data():
         cas_posunu = 50
         cas_pauzy = 500
         rychlost_animace = 50
-        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
-        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
+        text_hlavni_okno = "Marble"
+        text_nova_hra = "Začni hrát"
+        text_konec_hry = "Ukonči hru"
+        text_nastaveni = "Nastavení"
+        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni)
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni)
 
-def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace):
+def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni):
     #uloží nastavení proměnných do souboru
     config = configparser.ConfigParser()
     config['Nastaveni'] = {'sirka_matice': sirka_matice, 
@@ -78,6 +87,14 @@ def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obraz
                         'cas_posunu': cas_posunu,
                         'cas_pauzy': cas_pauzy,
                         'rychlost_animace': rychlost_animace}
+    config['CZ'] = {'text_hlavni_okno': 'Marble',
+                    'text_nova_hra': 'Začni hrát',
+                    'text_konec_hry': 'Ukonči hru',
+                    'text_nastaveni': 'Nastavení'}
+    config['EN'] = {'text_hlavni_okno': 'Marble',
+                    'text_nova_hra': 'Start game',
+                    'text_konec_hry': 'End game',
+                    'text_nastaveni': 'Settings'}
     with open('data.conf', 'w') as configfile:
         config.write(configfile)
 
