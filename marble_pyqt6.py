@@ -30,12 +30,13 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/01 JP - animace zmizení řady
 # # 2022/12/02 JP - úpravy proměnných, vylazení a příprava pro načítání ze/do souboru, vytvoření souboru a zprovoznění načítání a ukládání
 # # 2022/12/03 JP - přidání popisků do ukládání dat do souboru
+# # 2022/12/05 JP - přidání oznamovacího okna při skončení hry
 ################################
 
 import marble_funkce
 
 import sys, time
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QLCDNumber
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QLCDNumber, QMessageBox
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import QTimer
 
@@ -59,6 +60,7 @@ class MainWindow(QMainWindow):
         self.layout_mrizka = QGridLayout()
         self.layout_mrizka.setContentsMargins(0,0,0,0)
         self.layout_mrizka.setSpacing(0)
+        self.layout_nastaveni = QVBoxLayout()
         # vytvoření tlačítek a popisků
         self.Nova_hra_button = QPushButton(text_nova_hra)
         self.Nova_hra_button.clicked.connect(self.nova_hra_stisk)
@@ -196,6 +198,13 @@ class MainWindow(QMainWindow):
             self.pauza_az.stop()      
             self.hrac_je_na_tahu = True
     
+    def oznam_konec(self):
+        # Oznámení počtu bodů na konci hry
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle(text_oznameni_konec_tittle)
+        dlg.setText(text_oznameni_konec_text + str(self.body))
+        button = dlg.exec()
+    
     def herni_kolo(self):
         self.smazat_mista, pocet_bodu = marble_funkce.zkontroluj_rady(self.pole, min_rada, zisk)
         if pocet_bodu == 0:
@@ -216,18 +225,16 @@ class MainWindow(QMainWindow):
                 self.hra_bezi = False
                 self.Nova_hra_button.setText(text_nova_hra)
                 self.Nastaveni_button.setEnabled(True)
+                self.oznam_konec()
             else:
                 self.hrac_je_na_tahu = True
 
 
 # Načtení proměnných které je možné měnit v nastavení a popisků
-sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni = marble_funkce.nacti_data()
+sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text = marble_funkce.nacti_data()
 
 # a jedeeem
 app = QApplication(sys.argv)
 window = MainWindow()
 window.show()
 app.exec()
-
-# CO DODĚLAT
-# občas nepřesune kuličku a jede dál - prověřit
