@@ -30,6 +30,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/02 JP - ukládání a načtení dat ze souboru
 # # 2022/12/03 JP - přidání popisků do ukládání dat do souboru
 # # 2022/12/05 JP - doplnění dalších proměnných k načtení a uložení
+# # 2022/12/06 JP - oprava výpočtu bodů, aby se přičítali správně body při smazání řad ve více směrech
 ################################
 
 from random import sample
@@ -141,12 +142,11 @@ def pridej_kulicky(pole, prirustek, pocet_barev):
                     if kulicka == prirustek: return(pole)
                 poradi += 1
 
-def kontrola(policko,i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,pocet_bodu,zisk):
+def kontrola(policko,i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk):
     #kontrola daného políčka, podfunkce k funkci zkontroluj_rady()
     if policko == 0: # je políčko prázdné?
         if pocet_v_rade >= min_rada: # byla posloupnost dost dlouhá?
             smazat_mista += ke_smazani # přidej políčka ke smazání
-            pocet_bodu += zisk[pocet_v_rade - min_rada] # přičti body
         pocet_v_rade = 0
         ke_smazani = []
     else: # políčko prázdné není
@@ -156,28 +156,25 @@ def kontrola(policko,i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani
         else: # kulička je jiná než na předchozím poli
             if pocet_v_rade >= min_rada:
                 smazat_mista += ke_smazani # přidej políčka ke smazání
-                pocet_bodu += zisk[pocet_v_rade - min_rada] # přičti body
                 ke_smazani = []
             pocet_v_rade = 1
             ke_smazani = [[i,j]]
     predchozi = policko
-    return(pocet_v_rade,smazat_mista,ke_smazani,pocet_bodu,predchozi)
+    return(pocet_v_rade,smazat_mista,ke_smazani,predchozi)
 
 def zkontroluj_rady(pole, min_rada, zisk):
     # kontrola, zda je vytvořena jedna nebo více řad pro smazání a přičtení bodů
     rozmer = len(pole)
     smazat_mista = []
-    pocet_bodu = 0
     # kontrola ve vodorovném směru
     for i in range(rozmer):
         pocet_v_rade = 0
         ke_smazani = []
         predchozi = 0
         for j in range(rozmer):
-            pocet_v_rade,smazat_mista,ke_smazani,pocet_bodu,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,pocet_bodu,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
-            pocet_bodu += zisk[pocet_v_rade - min_rada] # přičti body
 
     # kontrola ve svislém směru
     for j in range(rozmer):
@@ -185,10 +182,9 @@ def zkontroluj_rady(pole, min_rada, zisk):
         ke_smazani = []
         predchozi = 0
         for i in range(rozmer):
-            pocet_v_rade,smazat_mista,ke_smazani,pocet_bodu,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,pocet_bodu,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
-            pocet_bodu += zisk[pocet_v_rade - min_rada] # přičti body
     
     #kontrola v šikmém směru shora doleva
     x = 0
@@ -198,22 +194,20 @@ def zkontroluj_rady(pole, min_rada, zisk):
         predchozi = 0
         i = x
         for j in range(y,-1,-1):
-            pocet_v_rade,smazat_mista,ke_smazani,pocet_bodu,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,pocet_bodu,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
             i +=1
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
-            pocet_bodu += zisk[pocet_v_rade - min_rada] # přičti body
     for x in range(1,min_rada+1):
         pocet_v_rade = 0
         ke_smazani = []
         predchozi = 0
         i = x
         for j in range(y,x-1,-1):
-            pocet_v_rade,smazat_mista,ke_smazani,pocet_bodu,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,pocet_bodu,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
             i +=1
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
-            pocet_bodu += zisk[pocet_v_rade - min_rada] # přičti body
         
     #kontrola v šimkém směru shora doprava
     x = 0
@@ -223,28 +217,31 @@ def zkontroluj_rady(pole, min_rada, zisk):
         predchozi = 0
         i = x
         for j in range(y,rozmer):
-            pocet_v_rade,smazat_mista,ke_smazani,pocet_bodu,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,pocet_bodu,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
             i +=1
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
-            pocet_bodu += zisk[pocet_v_rade - min_rada] # přičti body
     for x in range(1,min_rada+1):
         pocet_v_rade = 0
         ke_smazani = []
         predchozi = 0
         i = x
         for j in range(y,rozmer-x):
-            pocet_v_rade,smazat_mista,ke_smazani,pocet_bodu,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,pocet_bodu,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
             i +=1
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
-            pocet_bodu += zisk[pocet_v_rade - min_rada] # přičti body
     
     # smazání dulicit ze seznamu ke smazání
     smazat_mista_bez_duplicit = []
     for i in smazat_mista:
         if i not in smazat_mista_bez_duplicit:
             smazat_mista_bez_duplicit.append(i)
+    # zjištění počtu bodů
+    if len(smazat_mista_bez_duplicit) >= min_rada:
+        pocet_bodu = zisk[len(smazat_mista_bez_duplicit) - min_rada]
+    else:
+        pocet_bodu = 0
     return(smazat_mista_bez_duplicit, pocet_bodu)
 
 def je_pole_plne(pole):
