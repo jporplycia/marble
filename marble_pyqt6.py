@@ -31,6 +31,8 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/02 JP - úpravy proměnných, vylazení a příprava pro načítání ze/do souboru, vytvoření souboru a zprovoznění načítání a ukládání
 # # 2022/12/03 JP - přidání popisků do ukládání dat do souboru
 # # 2022/12/05 JP - přidání oznamovacího okna při skončení hry
+# # 2022/12/06 JP - příprava pro vytvoření okna nastavení
+# # 2022/12/07 JP - rozdělení načtení nastavení a jazyků - každé svou funkcí
 ################################
 
 import marble_funkce
@@ -48,24 +50,28 @@ class MainWindow(QMainWindow):
         self.sirka_pole, self.odsazeni_shora, self.odsazeni_zleva = 50, 39, 9
         self.body, self.krok = 0, 0
         self.barva, self.barva_vyber, self.kulicky, self.pozice_vybrane_kulicky, self.cil_pozice, self.cesta, self.smazat_mista = [], [], [], [], [], [], []
-        self.hra_bezi, self.hrac_je_na_tahu, self.vybrana_kulicka = False, False, False
+        self.hra_bezi, self.hrac_je_na_tahu, self.vybrana_kulicka, self.nastaveni = False, False, False, False
         
         # vytvoření okna
         self.setFixedWidth(self.sirka_pole * sirka_matice + 2 * self.odsazeni_zleva)
         self.setFixedHeight(self.sirka_pole * sirka_matice + self.odsazeni_shora + self.odsazeni_zleva)
         self.setWindowTitle(text_hlavni_okno)
-        # vytvoření layoutů kvůli rozložení na ploše
+        
+        # vytvoření layoutů
         self.layout_svisly = QVBoxLayout()
         self.layout_vodorovny = QHBoxLayout()
         self.layout_mrizka = QGridLayout()
         self.layout_mrizka.setContentsMargins(0,0,0,0)
         self.layout_mrizka.setSpacing(0)
         self.layout_nastaveni = QVBoxLayout()
+        
         # vytvoření tlačítek a popisků
         self.Nova_hra_button = QPushButton(text_nova_hra)
         self.Nova_hra_button.clicked.connect(self.nova_hra_stisk)
         self.lcd = QLCDNumber()
         self.Nastaveni_button = QPushButton(text_nastaveni)
+        self.Nastaveni_button.clicked.connect(self.nastaveni_stisk)
+        
         #vytvoření časovačů
         self.pauza=QTimer()
         self.pauza.timeout.connect(self.konec_pauzy)
@@ -73,6 +79,12 @@ class MainWindow(QMainWindow):
         self.pauza_krok.timeout.connect(self.krok_krok)
         self.pauza_az= QTimer()
         self.pauza_az.timeout.connect(self.animuj_zmizeni)
+        
+        # vytvoření widgetů
+        self.widget_hlavni = QWidget()
+        self.widget_grid = QWidget()
+        self.widget_nastaveni = QWidget()
+        self.widget_nastaveni.setVisible(False)
         
         # vytvoření herního pole
         self.pole = marble_funkce.vytvor_pole(sirka_matice)
@@ -99,15 +111,27 @@ class MainWindow(QMainWindow):
             self.kulicky.append(radek)
             
         # umístění do layoutů
+        self.widget_grid.setLayout(self.layout_mrizka)
         self.layout_vodorovny.addWidget(self.Nova_hra_button)
         self.layout_vodorovny.addWidget(self.lcd)
         self.layout_vodorovny.addWidget(self.Nastaveni_button)
         self.layout_svisly.addLayout(self.layout_vodorovny)
-        self.layout_svisly.addLayout(self.layout_mrizka)
-        widget = QWidget()
-        widget.setLayout(self.layout_svisly)
-        self.setCentralWidget(widget)
+        self.layout_svisly.addWidget(self.widget_grid)
+        self.layout_svisly.addWidget(self.widget_nastaveni)
+        self.widget_hlavni.setLayout(self.layout_svisly)
+        self.setCentralWidget(self.widget_hlavni)
         
+    def nastaveni_stisk(self):
+        # akce při stisku tlačítka Nastavení
+        if self.nastaveni:
+            self.widget_nastaveni.setVisible(False)
+            self.widget_grid.setVisible(True)
+        else:
+            self.widget_grid.setVisible(False)
+            self.widget_nastaveni.setVisible(True)
+        self.nastaveni = not(self.nastaveni)
+        
+    
     def nova_hra_stisk(self):
         # Přepiš tlačítko na ukonči hru, deaktivuj tlačítko nastavení, přidej na desku první kuličky
         if self.hra_bezi:
@@ -231,7 +255,8 @@ class MainWindow(QMainWindow):
 
 
 # Načtení proměnných které je možné měnit v nastavení a popisků
-sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text = marble_funkce.nacti_data()
+sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace = marble_funkce.nacti_data()
+text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text = marble_funkce.nacti_text()
 
 # a jedeeem
 app = QApplication(sys.argv)

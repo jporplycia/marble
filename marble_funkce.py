@@ -31,6 +31,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/03 JP - přidání popisků do ukládání dat do souboru
 # # 2022/12/05 JP - doplnění dalších proměnných k načtení a uložení
 # # 2022/12/06 JP - oprava výpočtu bodů, aby se přičítali správně body při smazání řad ve více směrech
+# # 2022/12/07 JP - rozdělení uložení nastavení a jazyků - každé do svého souboru a svou funkcí
 ################################
 
 from random import sample
@@ -52,13 +53,7 @@ def nacti_data():
         cas_posunu = int(config.get('Nastaveni','cas_posunu', fallback = 50))
         cas_pauzy = int(config.get('Nastaveni','cas_pauzy', fallback = 500))
         rychlost_animace = int(config.get('Nastaveni','rychlost_animace', fallback = 50))
-        text_hlavni_okno = config.get('CZ','text_hlavni_okno', fallback = 'Marble')
-        text_nova_hra = config.get('CZ','text_nova_hra', fallback = 'Začni hrát')
-        text_konec_hry = config.get('CZ','text_konec_hry', fallback = 'Ukonči hru')
-        text_nastaveni = config.get('CZ','text_nastaveni', fallback = 'Nastavení')
-        text_oznameni_konec_tittle = config.get('CZ','text_oznameni_konec_tittle', fallback = 'Konec hry')
-        text_oznameni_konec_text = config.get('CZ','text_oznameni_konec_text', fallback = 'Konec hry\nPočet bodů: ')
-        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text)
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
     except:
         print('chyba souboru, vytvořen nový')
         sirka_matice = 8
@@ -71,16 +66,10 @@ def nacti_data():
         cas_posunu = 50
         cas_pauzy = 500
         rychlost_animace = 50
-        text_hlavni_okno = 'Marble'
-        text_nova_hra = 'Začni hrát'
-        text_konec_hry = 'Ukonči hru'
-        text_nastaveni = 'Nastavení'
-        text_oznameni_konec_tittle = 'Konec hry'
-        text_oznameni_konec_text = 'Konec hry\nPočet bodů: '
-        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text)
-        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text)
+        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
 
-def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace, text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text):
+def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace):
     #uloží nastavení proměnných do souboru
     config = configparser.ConfigParser()
     config['Nastaveni'] = {'sirka_matice': sirka_matice, 
@@ -93,6 +82,35 @@ def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obraz
                         'cas_posunu': cas_posunu,
                         'cas_pauzy': cas_pauzy,
                         'rychlost_animace': rychlost_animace}
+    with open('data.conf', 'w') as configfile:
+        config.write(configfile)
+
+def nacti_text():
+    # načte nastavení textových proměnných ze souboru
+    try:
+        config = configparser.ConfigParser()
+        config.read('lang.conf')
+        text_hlavni_okno = config.get('CZ','text_hlavni_okno', fallback = 'Marble')
+        text_nova_hra = config.get('CZ','text_nova_hra', fallback = 'Začni hrát')
+        text_konec_hry = config.get('CZ','text_konec_hry', fallback = 'Ukonči hru')
+        text_nastaveni = config.get('CZ','text_nastaveni', fallback = 'Nastavení')
+        text_oznameni_konec_tittle = config.get('CZ','text_oznameni_konec_tittle', fallback = 'Konec hry')
+        text_oznameni_konec_text = config.get('CZ','text_oznameni_konec_text', fallback = 'Konec hry\nPočet bodů: ')
+        return(text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text)
+    except:
+        print('chyba jazykového souboru, vytvořen nový')
+        text_hlavni_okno = 'Marble'
+        text_nova_hra = 'Začni hrát'
+        text_konec_hry = 'Ukonči hru'
+        text_nastaveni = 'Nastavení'
+        text_oznameni_konec_tittle = 'Konec hry'
+        text_oznameni_konec_text = 'Konec hry\nPočet bodů: '
+        uloz_text()
+        return(text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text)
+
+def uloz_text():
+    #uloží nastavení textových proměnných do souboru
+    config = configparser.ConfigParser()
     config['CZ'] = {'text_hlavni_okno': 'Marble',
                     'text_nova_hra': 'Začni hrát',
                     'text_konec_hry': 'Ukonči hru',
@@ -105,7 +123,7 @@ def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obraz
                     'text_nastaveni': 'Settings',
                     'text_oznameni_konec_tittle': 'Game over',
                     'text_oznameni_konec_text': 'Game over\nPoints: '}
-    with open('data.conf', 'w') as configfile:
+    with open('lang.conf', 'w') as configfile:
         config.write(configfile)
 
 def vytvor_pole(sirka_matice):
