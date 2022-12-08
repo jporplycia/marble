@@ -32,6 +32,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/05 JP - doplnění dalších proměnných k načtení a uložení
 # # 2022/12/06 JP - oprava výpočtu bodů, aby se přičítali správně body při smazání řad ve více směrech
 # # 2022/12/07 JP - rozdělení uložení nastavení a jazyků - každé do svého souboru a svou funkcí
+# # 2022/12/08 JP - odstranění proměnných pro rychlost času, animace a posunu odstraněny z ukládání, ošetření řady zisku pro případ že je krátká, vezme se poslední hodnota
 ################################
 
 from random import sample
@@ -47,29 +48,23 @@ def nacti_data():
         pocet_barev = int(config.get('Nastaveni','pocet_barev', fallback = 8))
         prirustek = int(config.get('Nastaveni','prirustek', fallback = 3))
         min_rada = int(config.get('Nastaveni','min_rada', fallback = 5))
-        zisk = [int(n) for n in config.get('Nastaveni','zisk', fallback = '1, 3, 6, 12, 24, 48, 96').split(',')]
+        zisk = [int(n) for n in config.get('Nastaveni','zisk', fallback = '1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105, 120').split(',')]
         adresa_obrazku = config.get('Nastaveni','adresa_obrazku', fallback = 'images/a')
         adresa_vybranych_obrazku = config.get('Nastaveni','adresa_vybranych_obrazku', fallback = 'images/a1')
-        cas_posunu = int(config.get('Nastaveni','cas_posunu', fallback = 50))
-        cas_pauzy = int(config.get('Nastaveni','cas_pauzy', fallback = 500))
-        rychlost_animace = int(config.get('Nastaveni','rychlost_animace', fallback = 50))
-        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku)
     except:
         print('chyba souboru, vytvořen nový')
         sirka_matice = 8
         pocet_barev = 8
         prirustek = 3
         min_rada = 5
-        zisk = [1, 3, 6, 12, 24, 48, 96]
+        zisk = [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105, 120]
         adresa_obrazku = 'images/a'
         adresa_vybranych_obrazku = 'images/a1'
-        cas_posunu = 50
-        cas_pauzy = 500
-        rychlost_animace = 50
-        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
-        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace)
+        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku)
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku)
 
-def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace):
+def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku):
     #uloží nastavení proměnných do souboru
     config = configparser.ConfigParser()
     config['Nastaveni'] = {'sirka_matice': sirka_matice, 
@@ -78,10 +73,7 @@ def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obraz
                         'min_rada': min_rada,
                         'zisk': str(zisk)[1:-1],
                         'adresa_obrazku': adresa_obrazku,
-                        'adresa_vybranych_obrazku': adresa_vybranych_obrazku,
-                        'cas_posunu': cas_posunu,
-                        'cas_pauzy': cas_pauzy,
-                        'rychlost_animace': rychlost_animace}
+                        'adresa_vybranych_obrazku': adresa_vybranych_obrazku}
     with open('data.conf', 'w') as configfile:
         config.write(configfile)
 
@@ -160,7 +152,7 @@ def pridej_kulicky(pole, prirustek, pocet_barev):
                     if kulicka == prirustek: return(pole)
                 poradi += 1
 
-def kontrola(policko,i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk):
+def kontrola(policko,i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani):
     #kontrola daného políčka, podfunkce k funkci zkontroluj_rady()
     if policko == 0: # je políčko prázdné?
         if pocet_v_rade >= min_rada: # byla posloupnost dost dlouhá?
@@ -190,7 +182,7 @@ def zkontroluj_rady(pole, min_rada, zisk):
         ke_smazani = []
         predchozi = 0
         for j in range(rozmer):
-            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani)
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
 
@@ -200,7 +192,7 @@ def zkontroluj_rady(pole, min_rada, zisk):
         ke_smazani = []
         predchozi = 0
         for i in range(rozmer):
-            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani)
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
     
@@ -212,7 +204,7 @@ def zkontroluj_rady(pole, min_rada, zisk):
         predchozi = 0
         i = x
         for j in range(y,-1,-1):
-            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani)
             i +=1
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
@@ -222,7 +214,7 @@ def zkontroluj_rady(pole, min_rada, zisk):
         predchozi = 0
         i = x
         for j in range(y,x-1,-1):
-            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani)
             i +=1
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
@@ -235,7 +227,7 @@ def zkontroluj_rady(pole, min_rada, zisk):
         predchozi = 0
         i = x
         for j in range(y,rozmer):
-            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani)
             i +=1
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
@@ -245,7 +237,7 @@ def zkontroluj_rady(pole, min_rada, zisk):
         predchozi = 0
         i = x
         for j in range(y,rozmer-x):
-            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani,zisk)
+            pocet_v_rade,smazat_mista,ke_smazani,predchozi = kontrola(pole[i][j],i,j,predchozi,pocet_v_rade,min_rada,smazat_mista,ke_smazani)
             i +=1
         if pocet_v_rade >= min_rada:
             smazat_mista += ke_smazani # přidej políčka ke smazání
@@ -257,7 +249,10 @@ def zkontroluj_rady(pole, min_rada, zisk):
             smazat_mista_bez_duplicit.append(i)
     # zjištění počtu bodů
     if len(smazat_mista_bez_duplicit) >= min_rada:
-        pocet_bodu = zisk[len(smazat_mista_bez_duplicit) - min_rada]
+        if len(smazat_mista_bez_duplicit) - min_rada >= len(zisk): # pokud není řada zisků dostatečně dlouhá tak použít poslední hodnotu
+            pocet_bodu = zisk[-1]
+        else:
+            pocet_bodu = zisk[len(smazat_mista_bez_duplicit) - min_rada]
     else:
         pocet_bodu = 0
     return(smazat_mista_bez_duplicit, pocet_bodu)

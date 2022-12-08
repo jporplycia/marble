@@ -33,14 +33,15 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/05 JP - přidání oznamovacího okna při skončení hry
 # # 2022/12/06 JP - příprava pro vytvoření okna nastavení
 # # 2022/12/07 JP - rozdělení načtení nastavení a jazyků - každé svou funkcí
+# # 2022/12/08 JP - časy posunu, pauzy a rychlost animace přesunuty do neměnitelných parametrů, vytváření formuláře nastavení
 ################################
 
 import marble_funkce
 
 import sys, time
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QLCDNumber, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QLCDNumber, QMessageBox, QSlider, QLineEdit
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, Qt
 
 class MainWindow(QMainWindow):
 
@@ -48,6 +49,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         # nastavení proměnných
         self.sirka_pole, self.odsazeni_shora, self.odsazeni_zleva = 50, 39, 9
+        self.cas_posunu, self.cas_pauzy, self.rychlost_animace = 50, 500, 50
         self.body, self.krok = 0, 0
         self.barva, self.barva_vyber, self.kulicky, self.pozice_vybrane_kulicky, self.cil_pozice, self.cesta, self.smazat_mista = [], [], [], [], [], [], []
         self.hra_bezi, self.hrac_je_na_tahu, self.vybrana_kulicka, self.nastaveni = False, False, False, False
@@ -63,7 +65,7 @@ class MainWindow(QMainWindow):
         self.layout_mrizka = QGridLayout()
         self.layout_mrizka.setContentsMargins(0,0,0,0)
         self.layout_mrizka.setSpacing(0)
-        self.layout_nastaveni = QVBoxLayout()
+        self.layout_nastaveni = QGridLayout()
         
         # vytvoření tlačítek a popisků
         self.Nova_hra_button = QPushButton(text_nova_hra)
@@ -71,6 +73,43 @@ class MainWindow(QMainWindow):
         self.lcd = QLCDNumber()
         self.Nastaveni_button = QPushButton(text_nastaveni)
         self.Nastaveni_button.clicked.connect(self.nastaveni_stisk)
+        
+        self.label_sirka_matice = QLabel('Šířka hracího pole: ' + str(sirka_matice))
+        self.sl_sirka_matice = QSlider(Qt.Orientation.Horizontal)
+        self.sl_sirka_matice.setRange(5,15)
+        self.sl_sirka_matice.setValue(sirka_matice)
+        self.sl_sirka_matice.valueChanged[int].connect(self.changeValue_sirka_matice)
+        
+        self.label_pocet_barev = QLabel('Počet barev: ' + str(pocet_barev))
+        self.sl_pocet_barev = QSlider(Qt.Orientation.Horizontal)
+        self.sl_pocet_barev.setRange(3,11)
+        self.sl_pocet_barev.setValue(pocet_barev)
+        self.sl_pocet_barev.valueChanged[int].connect(self.changeValue_pocet_barev)
+        
+        self.label_prirustek = QLabel('Přírůstek kuliček: ' + str(prirustek))
+        self.sl_prirustek = QSlider(Qt.Orientation.Horizontal)
+        self.sl_prirustek.setRange(3,10)
+        self.sl_prirustek.setValue(prirustek)
+        self.sl_prirustek.valueChanged[int].connect(self.changeValue_prirustek)
+        
+        self.label_min_rada = QLabel('Minimální řada pro smazání: ' + str(min_rada))
+        self.sl_min_rada = QSlider(Qt.Orientation.Horizontal)
+        self.sl_min_rada.setRange(3,sirka_matice)
+        self.sl_min_rada.setValue(min_rada)
+        self.sl_min_rada.valueChanged[int].connect(self.changeValue_min_rada)
+        
+        self.label_zisk = QLabel('Zisk za počet kuliček ')
+        self.txt_zisk = QLineEdit(str(zisk)[1:-1])
+        self.txt_zisk.textChanged[str].connect(self.changeValue_zisk)
+        
+        self.label_adresa_obrazku = QLabel('Adresa obrázků ')
+        self.txt_adresa_obrazku = QLineEdit(adresa_obrazku)
+        self.txt_adresa_obrazku.textChanged[str].connect(self.changeValue_adresa_obrazku)
+        
+        self.label_adresa_vybranych_obrazku = QLabel('Adresa vybraných obrázků ')
+        self.txt_adresa_vybranych_obrazku = QLineEdit(adresa_vybranych_obrazku)
+        self.txt_adresa_vybranych_obrazku.textChanged[str].connect(self.changeValue_adresa_vybranych_obrazku)
+        #jazyk
         
         #vytvoření časovačů
         self.pauza=QTimer()
@@ -116,10 +155,62 @@ class MainWindow(QMainWindow):
         self.layout_vodorovny.addWidget(self.lcd)
         self.layout_vodorovny.addWidget(self.Nastaveni_button)
         self.layout_svisly.addLayout(self.layout_vodorovny)
+        self.layout_nastaveni.addWidget(self.label_sirka_matice,0,0)
+        self.layout_nastaveni.addWidget(self.sl_sirka_matice,0,1)
+        self.layout_nastaveni.addWidget(self.label_pocet_barev,1,0)
+        self.layout_nastaveni.addWidget(self.sl_pocet_barev,1,1)
+        self.layout_nastaveni.addWidget(self.label_prirustek,2,0)
+        self.layout_nastaveni.addWidget(self.sl_prirustek,2,1)
+        self.layout_nastaveni.addWidget(self.label_min_rada,3,0)
+        self.layout_nastaveni.addWidget(self.sl_min_rada,3,1)
+        self.layout_nastaveni.addWidget(self.label_zisk,4,0)
+        self.layout_nastaveni.addWidget(self.txt_zisk,4,1)
+        self.layout_nastaveni.addWidget(self.label_adresa_obrazku,5,0)
+        self.layout_nastaveni.addWidget(self.txt_adresa_obrazku,5,1)
+        self.layout_nastaveni.addWidget(self.label_adresa_vybranych_obrazku,6,0)
+        self.layout_nastaveni.addWidget(self.txt_adresa_vybranych_obrazku,6,1)
+        self.widget_nastaveni.setLayout(self.layout_nastaveni)
         self.layout_svisly.addWidget(self.widget_grid)
         self.layout_svisly.addWidget(self.widget_nastaveni)
         self.widget_hlavni.setLayout(self.layout_svisly)
         self.setCentralWidget(self.widget_hlavni)
+        
+    def changeValue_sirka_matice(self, value):
+        # akce při posunu slideru šířka matice
+        self.label_sirka_matice.setText('Šířka hracího pole: ' + str(value))
+        sirka_matice = value
+    
+    def changeValue_pocet_barev(self, value):
+        # akce při posunu slideru počet barev
+        self.label_pocet_barev.setText('Počet barev: ' + str(value))
+        pocet_barev = value
+    
+    def changeValue_prirustek(self, value):
+        # akce při posunu slideru přírůstek kuliček
+        self.label_prirustek.setText('Přírůstek kuliček: ' + str(value))
+        prirustek = value
+    
+    def changeValue_min_rada(self, value):
+        # akce při posunu slideru minimální řada pro smazání
+        self.label_min_rada.setText('Minimální řada pro smazání: ' + str(value))
+        min_rada = value
+    
+    def changeValue_adresa_obrazku(self, value):
+        # akce při změně textu - adresa obrázků
+        adresa_obrazku = value
+        
+    def changeValue_adresa_vybranych_obrazku(self, value):
+        # akce při změně textu - adresa obrázků
+        adresa_vybranych_obrazku = value
+        
+    def changeValue_zisk(self, value):
+        # akce při změně textu - adresa obrázků
+        zisk = []
+        for n in value.split(','):
+            try:
+                zisk.append(int(n))
+            except:
+                pass
         
     def nastaveni_stisk(self):
         # akce při stisku tlačítka Nastavení
@@ -180,7 +271,7 @@ class MainWindow(QMainWindow):
                         self.animuj()
                     else:
                         # cesta nenalezena, zruš výběr kuliček
-                        self.pauza.start(cas_pauzy)
+                        self.pauza.start(self.cas_pauzy)
             else:
                 # vybíráme kuličku, kterou chceme přesunout
                 if self.pole[i][j] > 0:
@@ -202,7 +293,7 @@ class MainWindow(QMainWindow):
         self.pole[self.cesta[-1][0]][self.cesta[-1][1]] = self.pole[self.cesta[0][0]][self.cesta[0][1]]
         self.pole[self.cesta[0][0]][self.cesta[0][1]] = 0
         self.krok = 0
-        self.pauza_krok.start(cas_posunu)
+        self.pauza_krok.start(self.cas_posunu)
     
     def krok_krok(self):
         if self.krok == len(self.cesta)-1:
@@ -242,7 +333,7 @@ class MainWindow(QMainWindow):
             for misto in self.smazat_mista:
                 self.pole[misto[0]][misto[1]] = 0
             self.krok = 0
-            self.pauza_az.start(rychlost_animace)
+            self.pauza_az.start(self.rychlost_animace)
         else:
             # pokud se pole zaplnilo, ukonči hru
             if marble_funkce.je_pole_plne(self.pole):
@@ -255,7 +346,7 @@ class MainWindow(QMainWindow):
 
 
 # Načtení proměnných které je možné měnit v nastavení a popisků
-sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, cas_posunu, cas_pauzy, rychlost_animace = marble_funkce.nacti_data()
+sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku = marble_funkce.nacti_data()
 text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text = marble_funkce.nacti_text()
 
 # a jedeeem
