@@ -34,12 +34,17 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/06 JP - příprava pro vytvoření okna nastavení
 # # 2022/12/07 JP - rozdělení načtení nastavení a jazyků - každé svou funkcí
 # # 2022/12/08 JP - časy posunu, pauzy a rychlost animace přesunuty do neměnitelných parametrů, vytváření formuláře nastavení
+# # 2022/12/09 JP - výběr jazyků, změny popisků tlačítka nastavení
+################################
+# co dodělat: 
+# formulář nastavení - ukládání a zpět bez uložení, nastavení pevné velikosti při zobrazení nastavení, bez ohledu na aktuální velikost hrací mřížky
+# textové popisky všechny do souboru jazykových mutací a doprogramování výběru jazyka
 ################################
 
 import marble_funkce
 
 import sys, time
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QLCDNumber, QMessageBox, QSlider, QLineEdit
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QLCDNumber, QMessageBox, QSlider, QLineEdit, QComboBox
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import QTimer, Qt
 
@@ -109,7 +114,11 @@ class MainWindow(QMainWindow):
         self.label_adresa_vybranych_obrazku = QLabel('Adresa vybraných obrázků ')
         self.txt_adresa_vybranych_obrazku = QLineEdit(adresa_vybranych_obrazku)
         self.txt_adresa_vybranych_obrazku.textChanged[str].connect(self.changeValue_adresa_vybranych_obrazku)
-        #jazyk
+        
+        self.label_jazyk = QLabel('Jazyk ')
+        self.cb_jazyk = QComboBox()
+        self.cb_jazyk.addItems(jazyky)
+        self.cb_jazyk.currentIndexChanged.connect(self.changeValue_jazyk)
         
         #vytvoření časovačů
         self.pauza=QTimer()
@@ -169,6 +178,8 @@ class MainWindow(QMainWindow):
         self.layout_nastaveni.addWidget(self.txt_adresa_obrazku,5,1)
         self.layout_nastaveni.addWidget(self.label_adresa_vybranych_obrazku,6,0)
         self.layout_nastaveni.addWidget(self.txt_adresa_vybranych_obrazku,6,1)
+        self.layout_nastaveni.addWidget(self.label_jazyk,7,0)
+        self.layout_nastaveni.addWidget(self.cb_jazyk,7,1)
         self.widget_nastaveni.setLayout(self.layout_nastaveni)
         self.layout_svisly.addWidget(self.widget_grid)
         self.layout_svisly.addWidget(self.widget_nastaveni)
@@ -177,34 +188,51 @@ class MainWindow(QMainWindow):
         
     def changeValue_sirka_matice(self, value):
         # akce při posunu slideru šířka matice
+        global sirka_matice, min_rada
         self.label_sirka_matice.setText('Šířka hracího pole: ' + str(value))
         sirka_matice = value
+        self.sl_min_rada.setRange(3,sirka_matice)
+        if min_rada > sirka_matice:
+            min_rada = sirka_matice
+            self.label_min_rada.setText('Minimální řada pro smazání: ' + str(min_rada))
+            self.sl_min_rada.setValue(min_rada)
     
     def changeValue_pocet_barev(self, value):
         # akce při posunu slideru počet barev
+        global pocet_barev
         self.label_pocet_barev.setText('Počet barev: ' + str(value))
         pocet_barev = value
     
     def changeValue_prirustek(self, value):
         # akce při posunu slideru přírůstek kuliček
+        global prirustek
         self.label_prirustek.setText('Přírůstek kuliček: ' + str(value))
         prirustek = value
     
     def changeValue_min_rada(self, value):
         # akce při posunu slideru minimální řada pro smazání
+        global min_rada
         self.label_min_rada.setText('Minimální řada pro smazání: ' + str(value))
         min_rada = value
     
     def changeValue_adresa_obrazku(self, value):
         # akce při změně textu - adresa obrázků
+        global adresa_obrazku
         adresa_obrazku = value
         
     def changeValue_adresa_vybranych_obrazku(self, value):
         # akce při změně textu - adresa obrázků
+        global adresa_vybranych_obrazku
         adresa_vybranych_obrazku = value
+        
+    def changeValue_jazyk(self, value):
+        # akce při změně textu - adresa obrázků
+        global jazyk, jazyky
+        jazyk = jazyky[value]
         
     def changeValue_zisk(self, value):
         # akce při změně textu - adresa obrázků
+        global zisk
         zisk = []
         for n in value.split(','):
             try:
@@ -217,9 +245,13 @@ class MainWindow(QMainWindow):
         if self.nastaveni:
             self.widget_nastaveni.setVisible(False)
             self.widget_grid.setVisible(True)
+            self.Nastaveni_button.setText('Nastavení')
+            self.Nova_hra_button.setEnabled(True)
         else:
             self.widget_grid.setVisible(False)
             self.widget_nastaveni.setVisible(True)
+            self.Nastaveni_button.setText('Zpět do hry')
+            self.Nova_hra_button.setEnabled(False)
         self.nastaveni = not(self.nastaveni)
         
     
@@ -347,6 +379,8 @@ class MainWindow(QMainWindow):
 
 # Načtení proměnných které je možné měnit v nastavení a popisků
 sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku = marble_funkce.nacti_data()
+jazyky = ['česky','english']
+jazyk = 'česky'
 text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text = marble_funkce.nacti_text()
 
 # a jedeeem

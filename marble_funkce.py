@@ -82,12 +82,12 @@ def nacti_text():
     try:
         config = configparser.ConfigParser()
         config.read('lang.conf')
-        text_hlavni_okno = config.get('CZ','text_hlavni_okno', fallback = 'Marble')
-        text_nova_hra = config.get('CZ','text_nova_hra', fallback = 'Začni hrát')
-        text_konec_hry = config.get('CZ','text_konec_hry', fallback = 'Ukonči hru')
-        text_nastaveni = config.get('CZ','text_nastaveni', fallback = 'Nastavení')
-        text_oznameni_konec_tittle = config.get('CZ','text_oznameni_konec_tittle', fallback = 'Konec hry')
-        text_oznameni_konec_text = config.get('CZ','text_oznameni_konec_text', fallback = 'Konec hry\nPočet bodů: ')
+        text_hlavni_okno = config.get('česky','text_hlavni_okno', fallback = 'Marble')
+        text_nova_hra = config.get('česky','text_nova_hra', fallback = 'Začni hrát')
+        text_konec_hry = config.get('česky','text_konec_hry', fallback = 'Ukonči hru')
+        text_nastaveni = config.get('česky','text_nastaveni', fallback = 'Nastavení')
+        text_oznameni_konec_tittle = config.get('česky','text_oznameni_konec_tittle', fallback = 'Konec hry')
+        text_oznameni_konec_text = config.get('česky','text_oznameni_konec_text', fallback = 'Konec hry\nPočet bodů: ')
         return(text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text)
     except:
         print('chyba jazykového souboru, vytvořen nový')
@@ -103,13 +103,13 @@ def nacti_text():
 def uloz_text():
     #uloží nastavení textových proměnných do souboru
     config = configparser.ConfigParser()
-    config['CZ'] = {'text_hlavni_okno': 'Marble',
+    config['česky'] = {'text_hlavni_okno': 'Marble',
                     'text_nova_hra': 'Začni hrát',
                     'text_konec_hry': 'Ukonči hru',
                     'text_nastaveni': 'Nastavení',
                     'text_oznameni_konec_tittle': 'Konec hry',
                     'text_oznameni_konec_text': 'Konec hry\nPočet bodů: '}
-    config['EN'] = {'text_hlavni_okno': 'Marble',
+    config['english'] = {'text_hlavni_okno': 'Marble',
                     'text_nova_hra': 'Start game',
                     'text_konec_hry': 'End game',
                     'text_nastaveni': 'Settings',
