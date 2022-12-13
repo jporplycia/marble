@@ -35,6 +35,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/07 JP - rozdělení načtení nastavení a jazyků - každé svou funkcí
 # # 2022/12/08 JP - časy posunu, pauzy a rychlost animace přesunuty do neměnitelných parametrů, vytváření formuláře nastavení
 # # 2022/12/09 JP - výběr jazyků, změny popisků tlačítka nastavení
+# # 2022/12/13 JP - dokončeni vzhledu okna nastavení, úpravy layoutů
 ################################
 # co dodělat: 
 # formulář nastavení - ukládání a zpět bez uložení, nastavení pevné velikosti při zobrazení nastavení, bez ohledu na aktuální velikost hrací mřížky
@@ -65,19 +66,22 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(text_hlavni_okno)
         
         # vytvoření layoutů
-        self.layout_svisly = QVBoxLayout()
-        self.layout_vodorovny = QHBoxLayout()
-        self.layout_mrizka = QGridLayout()
-        self.layout_mrizka.setContentsMargins(0,0,0,0)
-        self.layout_mrizka.setSpacing(0)
-        self.layout_nastaveni = QGridLayout()
+        self.layout_hlavni = QVBoxLayout()
+        self.layout_hlavni.setContentsMargins(0,0,0,0)
+        self.layout_hra_svisly = QVBoxLayout()
+        self.layout_hra_vodorovny = QHBoxLayout()
+        self.layout_hra_mrizka = QGridLayout()
+        self.layout_hra_mrizka.setSpacing(0)
+        self.layout_nastaveni_mrizka = QGridLayout()
+        self.layout_nastaveni_svisly = QVBoxLayout()
+        self.layout_nastaveni_vodorovny = QHBoxLayout()
         
         # vytvoření tlačítek a popisků
-        self.Nova_hra_button = QPushButton(text_nova_hra)
-        self.Nova_hra_button.clicked.connect(self.nova_hra_stisk)
+        self.btn_nova_hra = QPushButton(text_nova_hra)
+        self.btn_nova_hra.clicked.connect(self.nova_hra_stisk)
         self.lcd = QLCDNumber()
-        self.Nastaveni_button = QPushButton(text_nastaveni)
-        self.Nastaveni_button.clicked.connect(self.nastaveni_stisk)
+        self.btn_nastaveni = QPushButton(text_nastaveni)
+        self.btn_nastaveni.clicked.connect(self.nastaveni_stisk)
         
         self.label_sirka_matice = QLabel('Šířka hracího pole: ' + str(sirka_matice))
         self.sl_sirka_matice = QSlider(Qt.Orientation.Horizontal)
@@ -97,7 +101,7 @@ class MainWindow(QMainWindow):
         self.sl_prirustek.setValue(prirustek)
         self.sl_prirustek.valueChanged[int].connect(self.changeValue_prirustek)
         
-        self.label_min_rada = QLabel('Minimální řada pro smazání: ' + str(min_rada))
+        self.label_min_rada = QLabel('Délka řady pro smazání: ' + str(min_rada))
         self.sl_min_rada = QSlider(Qt.Orientation.Horizontal)
         self.sl_min_rada.setRange(3,sirka_matice)
         self.sl_min_rada.setValue(min_rada)
@@ -105,20 +109,20 @@ class MainWindow(QMainWindow):
         
         self.label_zisk = QLabel('Zisk za počet kuliček ')
         self.txt_zisk = QLineEdit(str(zisk)[1:-1])
-        self.txt_zisk.textChanged[str].connect(self.changeValue_zisk)
         
         self.label_adresa_obrazku = QLabel('Adresa obrázků ')
         self.txt_adresa_obrazku = QLineEdit(adresa_obrazku)
-        self.txt_adresa_obrazku.textChanged[str].connect(self.changeValue_adresa_obrazku)
         
         self.label_adresa_vybranych_obrazku = QLabel('Adresa vybraných obrázků ')
         self.txt_adresa_vybranych_obrazku = QLineEdit(adresa_vybranych_obrazku)
-        self.txt_adresa_vybranych_obrazku.textChanged[str].connect(self.changeValue_adresa_vybranych_obrazku)
         
         self.label_jazyk = QLabel('Jazyk ')
         self.cb_jazyk = QComboBox()
         self.cb_jazyk.addItems(jazyky)
-        self.cb_jazyk.currentIndexChanged.connect(self.changeValue_jazyk)
+        
+        self.btn_uloz = QPushButton('Ulož nastavení')
+        self.btn_default = QPushButton('Defaultní nastavení')
+        self.btn_zpet = QPushButton('Vrátit změny')
         
         #vytvoření časovačů
         self.pauza=QTimer()
@@ -130,7 +134,7 @@ class MainWindow(QMainWindow):
         
         # vytvoření widgetů
         self.widget_hlavni = QWidget()
-        self.widget_grid = QWidget()
+        self.widget_hra = QWidget()
         self.widget_nastaveni = QWidget()
         self.widget_nastaveni.setVisible(False)
         
@@ -154,82 +158,45 @@ class MainWindow(QMainWindow):
                 self.kulicka = QLabel(self)
                 self.kulicka.mouseReleaseEvent = self.vyber_kulicky_stisk
                 self.kulicka.setPixmap(self.barva[self.pole[i][j]])
-                self.layout_mrizka.addWidget(self.kulicka, i, j)
+                self.layout_hra_mrizka.addWidget(self.kulicka, i, j)
                 radek.append(self.kulicka)
             self.kulicky.append(radek)
             
         # umístění do layoutů
-        self.widget_grid.setLayout(self.layout_mrizka)
-        self.layout_vodorovny.addWidget(self.Nova_hra_button)
-        self.layout_vodorovny.addWidget(self.lcd)
-        self.layout_vodorovny.addWidget(self.Nastaveni_button)
-        self.layout_svisly.addLayout(self.layout_vodorovny)
-        self.layout_nastaveni.addWidget(self.label_sirka_matice,0,0)
-        self.layout_nastaveni.addWidget(self.sl_sirka_matice,0,1)
-        self.layout_nastaveni.addWidget(self.label_pocet_barev,1,0)
-        self.layout_nastaveni.addWidget(self.sl_pocet_barev,1,1)
-        self.layout_nastaveni.addWidget(self.label_prirustek,2,0)
-        self.layout_nastaveni.addWidget(self.sl_prirustek,2,1)
-        self.layout_nastaveni.addWidget(self.label_min_rada,3,0)
-        self.layout_nastaveni.addWidget(self.sl_min_rada,3,1)
-        self.layout_nastaveni.addWidget(self.label_zisk,4,0)
-        self.layout_nastaveni.addWidget(self.txt_zisk,4,1)
-        self.layout_nastaveni.addWidget(self.label_adresa_obrazku,5,0)
-        self.layout_nastaveni.addWidget(self.txt_adresa_obrazku,5,1)
-        self.layout_nastaveni.addWidget(self.label_adresa_vybranych_obrazku,6,0)
-        self.layout_nastaveni.addWidget(self.txt_adresa_vybranych_obrazku,6,1)
-        self.layout_nastaveni.addWidget(self.label_jazyk,7,0)
-        self.layout_nastaveni.addWidget(self.cb_jazyk,7,1)
-        self.widget_nastaveni.setLayout(self.layout_nastaveni)
-        self.layout_svisly.addWidget(self.widget_grid)
-        self.layout_svisly.addWidget(self.widget_nastaveni)
-        self.widget_hlavni.setLayout(self.layout_svisly)
+        self.layout_hra_vodorovny.addWidget(self.btn_nova_hra)
+        self.layout_hra_vodorovny.addWidget(self.lcd)
+        self.layout_hra_vodorovny.addWidget(self.btn_nastaveni)
+        self.layout_hra_svisly.addLayout(self.layout_hra_vodorovny)
+        self.layout_hra_svisly.addLayout(self.layout_hra_mrizka)
+        self.layout_nastaveni_mrizka.addWidget(self.label_sirka_matice,0,0)
+        self.layout_nastaveni_mrizka.addWidget(self.sl_sirka_matice,0,1)
+        self.layout_nastaveni_mrizka.addWidget(self.label_pocet_barev,1,0)
+        self.layout_nastaveni_mrizka.addWidget(self.sl_pocet_barev,1,1)
+        self.layout_nastaveni_mrizka.addWidget(self.label_prirustek,2,0)
+        self.layout_nastaveni_mrizka.addWidget(self.sl_prirustek,2,1)
+        self.layout_nastaveni_mrizka.addWidget(self.label_min_rada,3,0)
+        self.layout_nastaveni_mrizka.addWidget(self.sl_min_rada,3,1)
+        self.layout_nastaveni_mrizka.addWidget(self.label_zisk,4,0)
+        self.layout_nastaveni_mrizka.addWidget(self.txt_zisk,4,1)
+        self.layout_nastaveni_mrizka.addWidget(self.label_adresa_obrazku,5,0)
+        self.layout_nastaveni_mrizka.addWidget(self.txt_adresa_obrazku,5,1)
+        self.layout_nastaveni_mrizka.addWidget(self.label_adresa_vybranych_obrazku,6,0)
+        self.layout_nastaveni_mrizka.addWidget(self.txt_adresa_vybranych_obrazku,6,1)
+        self.layout_nastaveni_mrizka.addWidget(self.label_jazyk,7,0)
+        self.layout_nastaveni_mrizka.addWidget(self.cb_jazyk,7,1)
+        self.layout_nastaveni_vodorovny.addWidget(self.btn_zpet)
+        self.layout_nastaveni_vodorovny.addWidget(self.btn_default)
+        self.layout_nastaveni_vodorovny.addWidget(self.btn_uloz)
+        self.layout_nastaveni_svisly.addLayout(self.layout_nastaveni_mrizka)
+        self.layout_nastaveni_svisly.addLayout(self.layout_nastaveni_vodorovny)
+        self.widget_nastaveni.setLayout(self.layout_nastaveni_svisly)
+        self.widget_hra.setLayout(self.layout_hra_svisly)
+        self.layout_hlavni.addWidget(self.widget_nastaveni)
+        self.layout_hlavni.addWidget(self.widget_hra)
+        self.widget_hlavni.setLayout(self.layout_hlavni)
         self.setCentralWidget(self.widget_hlavni)
         
-    def changeValue_sirka_matice(self, value):
-        # akce při posunu slideru šířka matice
-        global sirka_matice, min_rada
-        self.label_sirka_matice.setText('Šířka hracího pole: ' + str(value))
-        sirka_matice = value
-        self.sl_min_rada.setRange(3,sirka_matice)
-        if min_rada > sirka_matice:
-            min_rada = sirka_matice
-            self.label_min_rada.setText('Minimální řada pro smazání: ' + str(min_rada))
-            self.sl_min_rada.setValue(min_rada)
-    
-    def changeValue_pocet_barev(self, value):
-        # akce při posunu slideru počet barev
-        global pocet_barev
-        self.label_pocet_barev.setText('Počet barev: ' + str(value))
-        pocet_barev = value
-    
-    def changeValue_prirustek(self, value):
-        # akce při posunu slideru přírůstek kuliček
-        global prirustek
-        self.label_prirustek.setText('Přírůstek kuliček: ' + str(value))
-        prirustek = value
-    
-    def changeValue_min_rada(self, value):
-        # akce při posunu slideru minimální řada pro smazání
-        global min_rada
-        self.label_min_rada.setText('Minimální řada pro smazání: ' + str(value))
-        min_rada = value
-    
-    def changeValue_adresa_obrazku(self, value):
-        # akce při změně textu - adresa obrázků
-        global adresa_obrazku
-        adresa_obrazku = value
-        
-    def changeValue_adresa_vybranych_obrazku(self, value):
-        # akce při změně textu - adresa obrázků
-        global adresa_vybranych_obrazku
-        adresa_vybranych_obrazku = value
-        
-    def changeValue_jazyk(self, value):
-        # akce při změně textu - adresa obrázků
-        global jazyk, jazyky
-        jazyk = jazyky[value]
-        
+    """
     def changeValue_zisk(self, value):
         # akce při změně textu - adresa obrázků
         global zisk
@@ -239,19 +206,41 @@ class MainWindow(QMainWindow):
                 zisk.append(int(n))
             except:
                 pass
-        
+    """
+    def changeValue_sirka_matice(self, value):
+        # akce při posunu slideru šířka matice
+        self.label_sirka_matice.setText('Šířka hracího pole: ' + str(value))
+        self.sl_min_rada.setRange(3,value)
+        if self.sl_min_rada.value() > value:
+            self.label_min_rada.setText('Délka řady pro smazání: ' + str(value))
+            self.sl_min_rada.setValue(value)
+    
+    def changeValue_pocet_barev(self, value):
+        # akce při posunu slideru počet barev
+        self.label_pocet_barev.setText('Počet barev: ' + str(value))
+    
+    def changeValue_prirustek(self, value):
+        # akce při posunu slideru přírůstek kuliček
+        self.label_prirustek.setText('Přírůstek kuliček: ' + str(value))
+    
+    def changeValue_min_rada(self, value):
+        # akce při posunu slideru minimální řada pro smazání
+        self.label_min_rada.setText('Délka řady pro smazání: ' + str(value))
+    
     def nastaveni_stisk(self):
         # akce při stisku tlačítka Nastavení
         if self.nastaveni:
             self.widget_nastaveni.setVisible(False)
-            self.widget_grid.setVisible(True)
-            self.Nastaveni_button.setText('Nastavení')
-            self.Nova_hra_button.setEnabled(True)
+            self.widget_hra.setVisible(True)
+            self.btn_nastaveni.setText('Nastavení')
+            self.btn_nova_hra.setEnabled(True)
         else:
-            self.widget_grid.setVisible(False)
+            self.widget_hra.setVisible(False)
             self.widget_nastaveni.setVisible(True)
-            self.Nastaveni_button.setText('Zpět do hry')
-            self.Nova_hra_button.setEnabled(False)
+            self.setFixedWidth(418)
+            self.setFixedHeight(270)
+            self.btn_nastaveni.setText('Zpět do hry')
+            self.btn_nova_hra.setEnabled(False)
         self.nastaveni = not(self.nastaveni)
         
     
@@ -259,14 +248,14 @@ class MainWindow(QMainWindow):
         # Přepiš tlačítko na ukonči hru, deaktivuj tlačítko nastavení, přidej na desku první kuličky
         if self.hra_bezi:
             self.hra_bezi = False
-            self.Nova_hra_button.setText(text_nova_hra)
-            self.Nastaveni_button.setEnabled(True)
+            self.btn_nova_hra.setText(text_nova_hra)
+            self.btn_nastaveni.setEnabled(True)
         else:
             # start hry
             self.body = 0
             self.lcd.display(self.body)
-            self.Nova_hra_button.setText(text_konec_hry)
-            self.Nastaveni_button.setEnabled(False)
+            self.btn_nova_hra.setText(text_konec_hry)
+            self.btn_nastaveni.setEnabled(False)
             self.pole = marble_funkce.vytvor_pole(sirka_matice)
             self.prekresli_obraz()
             self.hra_bezi = True
@@ -370,8 +359,8 @@ class MainWindow(QMainWindow):
             # pokud se pole zaplnilo, ukonči hru
             if marble_funkce.je_pole_plne(self.pole):
                 self.hra_bezi = False
-                self.Nova_hra_button.setText(text_nova_hra)
-                self.Nastaveni_button.setEnabled(True)
+                self.btn_nova_hra.setText(text_nova_hra)
+                self.btn_nastaveni.setEnabled(True)
                 self.oznam_konec()
             else:
                 self.hrac_je_na_tahu = True
