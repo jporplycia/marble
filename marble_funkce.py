@@ -51,7 +51,8 @@ def nacti_data():
         zisk = [int(n) for n in config.get('Nastaveni','zisk', fallback = '1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105, 120').split(',')]
         adresa_obrazku = config.get('Nastaveni','adresa_obrazku', fallback = 'images/a')
         adresa_vybranych_obrazku = config.get('Nastaveni','adresa_vybranych_obrazku', fallback = 'images/a1')
-        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku)
+        jazyk = config.get('Nastaveni','jazyk', fallback = 'česky')
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk)
     except:
         print('chyba souboru, vytvořen nový')
         sirka_matice = 8
@@ -61,10 +62,11 @@ def nacti_data():
         zisk = [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105, 120]
         adresa_obrazku = 'images/a'
         adresa_vybranych_obrazku = 'images/a1'
-        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku)
-        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku)
+        jazyk = 'česky'
+        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk)
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk)
 
-def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku):
+def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk):
     #uloží nastavení proměnných do souboru
     config = configparser.ConfigParser()
     config['Nastaveni'] = {'sirka_matice': sirka_matice, 
@@ -73,7 +75,8 @@ def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obraz
                         'min_rada': min_rada,
                         'zisk': str(zisk)[1:-1],
                         'adresa_obrazku': adresa_obrazku,
-                        'adresa_vybranych_obrazku': adresa_vybranych_obrazku}
+                        'adresa_vybranych_obrazku': adresa_vybranych_obrazku,
+                        'jazyk': jazyk}
     with open('data.conf', 'w') as configfile:
         config.write(configfile)
 
@@ -82,21 +85,21 @@ def nacti_text():
     try:
         config = configparser.ConfigParser()
         config.read('lang.conf')
-        text_hlavni_okno = config.get('česky','text_hlavni_okno', fallback = 'Marble')
-        text_nova_hra = config.get('česky','text_nova_hra', fallback = 'Začni hrát')
-        text_konec_hry = config.get('česky','text_konec_hry', fallback = 'Ukonči hru')
-        text_nastaveni = config.get('česky','text_nastaveni', fallback = 'Nastavení')
-        text_oznameni_konec_tittle = config.get('česky','text_oznameni_konec_tittle', fallback = 'Konec hry')
-        text_oznameni_konec_text = config.get('česky','text_oznameni_konec_text', fallback = 'Konec hry\nPočet bodů: ')
+        text_hlavni_okno = config.get('česky','text_hlavni_okno')
+        text_nova_hra = config.get('česky','text_nova_hra')
+        text_konec_hry = config.get('česky','text_konec_hry')
+        text_nastaveni = config.get('česky','text_nastaveni')
+        text_oznameni_konec_tittle = config.get('česky','text_oznameni_konec_tittle')
+        text_oznameni_konec_text = config.get('česky','text_oznameni_konec_text')
         return(text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text)
     except:
         print('chyba jazykového souboru, vytvořen nový')
         text_hlavni_okno = 'Marble'
-        text_nova_hra = 'Začni hrát'
+        text_nova_hra = 'Začni hru'
         text_konec_hry = 'Ukonči hru'
         text_nastaveni = 'Nastavení'
         text_oznameni_konec_tittle = 'Konec hry'
-        text_oznameni_konec_text = 'Konec hry\nPočet bodů: '
+        text_oznameni_konec_text = 'Konec hry! Počet bodů: '
         uloz_text()
         return(text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text)
 
@@ -108,13 +111,13 @@ def uloz_text():
                     'text_konec_hry': 'Ukonči hru',
                     'text_nastaveni': 'Nastavení',
                     'text_oznameni_konec_tittle': 'Konec hry',
-                    'text_oznameni_konec_text': 'Konec hry\nPočet bodů: '}
+                    'text_oznameni_konec_text': 'Konec hry! Počet bodů: '}
     config['english'] = {'text_hlavni_okno': 'Marble',
                     'text_nova_hra': 'Start game',
                     'text_konec_hry': 'End game',
                     'text_nastaveni': 'Settings',
                     'text_oznameni_konec_tittle': 'Game over',
-                    'text_oznameni_konec_text': 'Game over\nPoints: '}
+                    'text_oznameni_konec_text': 'Game over! Points: '}
     with open('lang.conf', 'w') as configfile:
         config.write(configfile)
 

@@ -36,9 +36,9 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/08 JP - časy posunu, pauzy a rychlost animace přesunuty do neměnitelných parametrů, vytváření formuláře nastavení
 # # 2022/12/09 JP - výběr jazyků, změny popisků tlačítka nastavení
 # # 2022/12/13 JP - dokončeni vzhledu okna nastavení, úpravy layoutů
+# # 2022/12/14 JP - dokončení okna nastavení, funkční tlačítka ulož a zpět, kromě přepínání jazyka
 ################################
 # co dodělat: 
-# formulář nastavení - ukládání a zpět bez uložení, nastavení pevné velikosti při zobrazení nastavení, bez ohledu na aktuální velikost hrací mřížky
 # textové popisky všechny do souboru jazykových mutací a doprogramování výběru jazyka
 ################################
 
@@ -58,12 +58,18 @@ class MainWindow(QMainWindow):
         self.cas_posunu, self.cas_pauzy, self.rychlost_animace = 50, 500, 50
         self.body, self.krok = 0, 0
         self.barva, self.barva_vyber, self.kulicky, self.pozice_vybrane_kulicky, self.cil_pozice, self.cesta, self.smazat_mista = [], [], [], [], [], [], []
-        self.hra_bezi, self.hrac_je_na_tahu, self.vybrana_kulicka, self.nastaveni = False, False, False, False
+        self.hra_bezi, self.hrac_je_na_tahu, self.vybrana_kulicka = False, False, False
         
-        # vytvoření okna
-        self.setFixedWidth(self.sirka_pole * sirka_matice + 2 * self.odsazeni_zleva)
-        self.setFixedHeight(self.sirka_pole * sirka_matice + self.odsazeni_shora + self.odsazeni_zleva)
-        self.setWindowTitle(text_hlavni_okno)
+        # načtení obrázků kuliček
+        for i in range(pocet_barev + 1):
+            adresa = adresa_obrazku + str(i).zfill(2) + '.png'
+            self.barva.append(QPixmap(adresa).scaledToWidth(self.sirka_pole))
+        for i in range(pocet_barev + 1):
+            adresa = adresa_vybranych_obrazku + str(i).zfill(2) + '.png'
+            self.barva_vyber.append(QPixmap(adresa).scaledToWidth(self.sirka_pole))
+            
+        # vytvoření okna a herního pole
+        self.nastav_okno()
         
         # vytvoření layoutů
         self.layout_hlavni = QVBoxLayout()
@@ -76,13 +82,21 @@ class MainWindow(QMainWindow):
         self.layout_nastaveni_svisly = QVBoxLayout()
         self.layout_nastaveni_vodorovny = QHBoxLayout()
         
-        # vytvoření tlačítek a popisků
+        # vytvoření widgetů pro uložení layoutů k přepínání oken
+        self.widget_hlavni = QWidget()
+        self.widget_hra = QWidget()
+        self.widget_nastaveni = QWidget()
+        self.widget_nastaveni.setVisible(False)
+        
+        # vytvoření widgetů pro okno hra
         self.btn_nova_hra = QPushButton(text_nova_hra)
         self.btn_nova_hra.clicked.connect(self.nova_hra_stisk)
         self.lcd = QLCDNumber()
         self.btn_nastaveni = QPushButton(text_nastaveni)
         self.btn_nastaveni.clicked.connect(self.nastaveni_stisk)
+        self.vytvor_mrizku() # vytvoří herní mřížku
         
+        # vytvoření widgetů pro okno nastavení
         self.label_sirka_matice = QLabel('Šířka hracího pole: ' + str(sirka_matice))
         self.sl_sirka_matice = QSlider(Qt.Orientation.Horizontal)
         self.sl_sirka_matice.setRange(5,15)
@@ -120,9 +134,10 @@ class MainWindow(QMainWindow):
         self.cb_jazyk = QComboBox()
         self.cb_jazyk.addItems(jazyky)
         
-        self.btn_uloz = QPushButton('Ulož nastavení')
-        self.btn_default = QPushButton('Defaultní nastavení')
-        self.btn_zpet = QPushButton('Vrátit změny')
+        self.btn_uloz = QPushButton('Uložit a zavřít')
+        self.btn_uloz.clicked.connect(self.uloz_stisk)
+        self.btn_zpet = QPushButton('Zpět bez uložení')
+        self.btn_zpet.clicked.connect(self.zpet_stisk)
         
         #vytvoření časovačů
         self.pauza=QTimer()
@@ -132,36 +147,6 @@ class MainWindow(QMainWindow):
         self.pauza_az= QTimer()
         self.pauza_az.timeout.connect(self.animuj_zmizeni)
         
-        # vytvoření widgetů
-        self.widget_hlavni = QWidget()
-        self.widget_hra = QWidget()
-        self.widget_nastaveni = QWidget()
-        self.widget_nastaveni.setVisible(False)
-        
-        # vytvoření herního pole
-        self.pole = marble_funkce.vytvor_pole(sirka_matice)
-        
-        # načtení obrázků barev
-        for i in range(pocet_barev + 1):
-            adresa = adresa_obrazku + str(i).zfill(2) + '.png'
-            self.barva.append(QPixmap(adresa).scaledToWidth(self.sirka_pole))
-        
-        # načtení obrázků barev při výběru
-        for i in range(pocet_barev + 1):
-            adresa = adresa_vybranych_obrazku + str(i).zfill(2) + '.png'
-            self.barva_vyber.append(QPixmap(adresa).scaledToWidth(self.sirka_pole))
-            
-        # vytvoření herní mřížky
-        for i in range(sirka_matice):
-            radek=[]
-            for j in range(sirka_matice):
-                self.kulicka = QLabel(self)
-                self.kulicka.mouseReleaseEvent = self.vyber_kulicky_stisk
-                self.kulicka.setPixmap(self.barva[self.pole[i][j]])
-                self.layout_hra_mrizka.addWidget(self.kulicka, i, j)
-                radek.append(self.kulicka)
-            self.kulicky.append(radek)
-            
         # umístění do layoutů
         self.layout_hra_vodorovny.addWidget(self.btn_nova_hra)
         self.layout_hra_vodorovny.addWidget(self.lcd)
@@ -185,7 +170,6 @@ class MainWindow(QMainWindow):
         self.layout_nastaveni_mrizka.addWidget(self.label_jazyk,7,0)
         self.layout_nastaveni_mrizka.addWidget(self.cb_jazyk,7,1)
         self.layout_nastaveni_vodorovny.addWidget(self.btn_zpet)
-        self.layout_nastaveni_vodorovny.addWidget(self.btn_default)
         self.layout_nastaveni_vodorovny.addWidget(self.btn_uloz)
         self.layout_nastaveni_svisly.addLayout(self.layout_nastaveni_mrizka)
         self.layout_nastaveni_svisly.addLayout(self.layout_nastaveni_vodorovny)
@@ -196,17 +180,27 @@ class MainWindow(QMainWindow):
         self.widget_hlavni.setLayout(self.layout_hlavni)
         self.setCentralWidget(self.widget_hlavni)
         
-    """
-    def changeValue_zisk(self, value):
-        # akce při změně textu - adresa obrázků
-        global zisk
-        zisk = []
-        for n in value.split(','):
-            try:
-                zisk.append(int(n))
-            except:
-                pass
-    """
+    def nastav_okno(self):
+        # vytvoření okna a herního pole
+        self.setFixedWidth(self.sirka_pole * sirka_matice + 2 * self.odsazeni_zleva)
+        self.setFixedHeight(self.sirka_pole * sirka_matice + self.odsazeni_shora + self.odsazeni_zleva)
+        self.setWindowTitle(text_hlavni_okno)
+        # vytvoření herního pole
+        self.pole = marble_funkce.vytvor_pole(sirka_matice)
+    
+    def vytvor_mrizku(self):
+        # vytvoření herní mřížky
+        self.kulicky = []
+        for i in range(sirka_matice):
+            radek=[]
+            for j in range(sirka_matice):
+                self.kulicka = QLabel(self)
+                self.kulicka.mouseReleaseEvent = self.vyber_kulicky_stisk
+                self.kulicka.setPixmap(self.barva[self.pole[i][j]])
+                self.layout_hra_mrizka.addWidget(self.kulicka, i, j)
+                radek.append(self.kulicka)
+            self.kulicky.append(radek)
+    
     def changeValue_sirka_matice(self, value):
         # akce při posunu slideru šířka matice
         self.label_sirka_matice.setText('Šířka hracího pole: ' + str(value))
@@ -229,21 +223,46 @@ class MainWindow(QMainWindow):
     
     def nastaveni_stisk(self):
         # akce při stisku tlačítka Nastavení
-        if self.nastaveni:
-            self.widget_nastaveni.setVisible(False)
-            self.widget_hra.setVisible(True)
-            self.btn_nastaveni.setText('Nastavení')
-            self.btn_nova_hra.setEnabled(True)
-        else:
-            self.widget_hra.setVisible(False)
-            self.widget_nastaveni.setVisible(True)
-            self.setFixedWidth(418)
-            self.setFixedHeight(270)
-            self.btn_nastaveni.setText('Zpět do hry')
-            self.btn_nova_hra.setEnabled(False)
-        self.nastaveni = not(self.nastaveni)
+        self.widget_hra.setVisible(False)
+        self.setFixedWidth(418)
+        self.setFixedHeight(270)
+        self.widget_nastaveni.setVisible(True)
         
+    def zpet_stisk(self):
+        # akce při stisku tlačítka zpět v nastavení
+        self.widget_nastaveni.setVisible(False)
+        self.nastav_okno()
+        self.widget_hra.setVisible(True)
     
+    def uloz_stisk(self):
+        # akce při stisku tlačítka ulož v nastavení
+        global sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk
+        # smaž widgety kuliček
+        for i in range(sirka_matice):
+            for j in range(sirka_matice):
+                self.kulicky[i][j].close()
+        # nastav nově proměnné
+        sirka_matice = self.sl_sirka_matice.value()
+        pocet_barev = self.sl_pocet_barev.value()
+        prirustek = self.sl_prirustek.value()
+        min_rada = self.sl_min_rada.value()
+        zisk = []
+        for n in self.txt_zisk.text().split(','):
+            try:
+                zisk.append(int(n))
+            except:
+                pass
+        adresa_obrazku = self.txt_adresa_obrazku.text()
+        adresa_vybranych_obrazku = self.txt_adresa_vybranych_obrazku.text()
+        jazyk = self.cb_jazyk.currentText()
+        # ulož nové proměnné
+        marble_funkce.uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk)
+        # skryj okno nastavení a nastav nově okno hry
+        self.widget_nastaveni.setVisible(False)
+        self.nastav_okno()
+        self.vytvor_mrizku()
+        self.widget_hra.setVisible(True)
+        
     def nova_hra_stisk(self):
         # Přepiš tlačítko na ukonči hru, deaktivuj tlačítko nastavení, přidej na desku první kuličky
         if self.hra_bezi:
@@ -367,9 +386,8 @@ class MainWindow(QMainWindow):
 
 
 # Načtení proměnných které je možné měnit v nastavení a popisků
-sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku = marble_funkce.nacti_data()
+sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk = marble_funkce.nacti_data()
 jazyky = ['česky','english']
-jazyk = 'česky'
 text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text = marble_funkce.nacti_text()
 
 # a jedeeem
