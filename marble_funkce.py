@@ -82,44 +82,59 @@ def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obraz
 
 def nacti_text():
     # načte nastavení textových proměnných ze souboru
+    texty = []
     try:
         config = configparser.ConfigParser()
         config.read('lang.conf')
-        text_hlavni_okno = config.get('česky','text_hlavni_okno')
-        text_nova_hra = config.get('česky','text_nova_hra')
-        text_konec_hry = config.get('česky','text_konec_hry')
-        text_nastaveni = config.get('česky','text_nastaveni')
-        text_oznameni_konec_tittle = config.get('česky','text_oznameni_konec_tittle')
-        text_oznameni_konec_text = config.get('česky','text_oznameni_konec_text')
-        return(text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text)
+        texty.append(config.get('česky','t0'))
+        texty.append(config.get('česky','t1'))
+        texty.append(config.get('česky','t2'))
+        texty.append(config.get('česky','t3'))
+        texty.append(config.get('česky','t4'))
+        texty.append(config.get('česky','t5'))
+        texty.append(config.get('česky','t6'))
+        texty.append(config.get('česky','t7'))
+        texty.append(config.get('česky','t8'))
+        texty.append(config.get('česky','t9'))
+        texty.append(config.get('česky','t10'))
+        texty.append(config.get('česky','t11'))
+        texty.append(config.get('česky','t12'))
+        texty.append(config.get('česky','t13'))
+        texty.append(config.get('česky','t14'))
+        texty.append(config.get('česky','t15'))
+        return(texty)
     except:
         print('chyba jazykového souboru, vytvořen nový')
-        text_hlavni_okno = 'Marble'
-        text_nova_hra = 'Začni hru'
-        text_konec_hry = 'Ukonči hru'
-        text_nastaveni = 'Nastavení'
-        text_oznameni_konec_tittle = 'Konec hry'
-        text_oznameni_konec_text = 'Konec hry! Počet bodů: '
-        uloz_text()
-        return(text_hlavni_okno, text_nova_hra, text_konec_hry, text_nastaveni, text_oznameni_konec_tittle, text_oznameni_konec_text)
-
-def uloz_text():
-    #uloží nastavení textových proměnných do souboru
-    config = configparser.ConfigParser()
-    config['česky'] = {'text_hlavni_okno': 'Marble',
-                    'text_nova_hra': 'Začni hrát',
-                    'text_konec_hry': 'Ukonči hru',
-                    'text_nastaveni': 'Nastavení',
-                    'text_oznameni_konec_tittle': 'Konec hry',
-                    'text_oznameni_konec_text': 'Konec hry! Počet bodů: '}
-    config['english'] = {'text_hlavni_okno': 'Marble',
-                    'text_nova_hra': 'Start game',
-                    'text_konec_hry': 'End game',
-                    'text_nastaveni': 'Settings',
-                    'text_oznameni_konec_tittle': 'Game over',
-                    'text_oznameni_konec_text': 'Game over! Points: '}
-    with open('lang.conf', 'w') as configfile:
-        config.write(configfile)
+        texty = ['Marble','Začni hru','Ukonči hru','Nastavení','Konec hry','Konec hry! Počet bodů: ','Šířka hracího pole: ','Počet barev: ','Přírůstek kuliček: ','Délka řady pro smazání: ','Zisk za počet kuliček ','Adresa obrázků ','Adresa vybraných obrázků ','Jazyk ','Uložit a zavřít','Zpět bez uložení']
+        #uloží nastavení textových proměnných do souboru
+        config = configparser.ConfigParser()
+        config['česky'] = {
+                        't0': texty[0],
+                        't1': texty[1],
+                        't2': texty[2],
+                        't3': texty[3],
+                        't4': texty[4],
+                        't5': texty[5],
+                        't6': texty[6],
+                        't7': texty[7],
+                        't8': texty[8],
+                        't9': texty[9],
+                        't10': texty[10],
+                        't11': texty[11],
+                        't12': texty[12],
+                        't13': texty[13],
+                        't14': texty[14],
+                        't15': texty[15]
+                        }
+        """config['english'] = {'text_hlavni_okno': 'Marble',
+                        'text_nova_hra': 'Start game',
+                        'text_konec_hry': 'End game',
+                        'text_nastaveni': 'Settings',
+                        'text_oznameni_konec_tittle': 'Game over',
+                        'text_oznameni_konec_text': 'Game over! Points: '}"""
+        with open('lang.conf', 'w') as configfile:
+            config.write(configfile)
+        return(texty)
 
 def vytvor_pole(sirka_matice):
     # vytvoří pole a nastaví všem polím hodnotu 0
