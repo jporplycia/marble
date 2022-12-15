@@ -33,6 +33,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/06 JP - oprava výpočtu bodů, aby se přičítali správně body při smazání řad ve více směrech
 # # 2022/12/07 JP - rozdělení uložení nastavení a jazyků - každé do svého souboru a svou funkcí
 # # 2022/12/08 JP - odstranění proměnných pro rychlost času, animace a posunu odstraněny z ukládání, ošetření řady zisku pro případ že je krátká, vezme se poslední hodnota
+# # 2022/12/15 JP - úprava funkce načti text
 ################################
 
 from random import sample
@@ -126,12 +127,6 @@ def nacti_text():
                         't14': texty[14],
                         't15': texty[15]
                         }
-        """config['english'] = {'text_hlavni_okno': 'Marble',
-                        'text_nova_hra': 'Start game',
-                        'text_konec_hry': 'End game',
-                        'text_nastaveni': 'Settings',
-                        'text_oznameni_konec_tittle': 'Game over',
-                        'text_oznameni_konec_text': 'Game over! Points: '}"""
         with open('lang.conf', 'w') as configfile:
             config.write(configfile)
         return(texty)

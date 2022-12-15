@@ -37,6 +37,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/09 JP - výběr jazyků, změny popisků tlačítka nastavení
 # # 2022/12/13 JP - dokončeni vzhledu okna nastavení, úpravy layoutů
 # # 2022/12/14 JP - dokončení okna nastavení, funkční tlačítka ulož a zpět, kromě přepínání jazyka
+# # 2022/12/15 JP - všechny texty se načítají ze souboru, zatím nelze přepínat jazyky
 ################################
 # co dodělat: 
 # textové popisky všechny do souboru jazykových mutací a doprogramování výběru jazyka
