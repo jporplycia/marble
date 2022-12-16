@@ -34,6 +34,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/07 JP - rozdělení uložení nastavení a jazyků - každé do svého souboru a svou funkcí
 # # 2022/12/08 JP - odstranění proměnných pro rychlost času, animace a posunu odstraněny z ukládání, ošetření řady zisku pro případ že je krátká, vezme se poslední hodnota
 # # 2022/12/15 JP - úprava funkce načti text
+# # 2022/12/16 JP - vytvoření funkce nacti_jazyky
 ################################
 
 from random import sample
@@ -81,28 +82,37 @@ def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obraz
     with open('data.conf', 'w') as configfile:
         config.write(configfile)
 
-def nacti_text():
+def nacti_jazyky():
+    # načte seznam jazyků zadaných v lang.conf
+    try:
+        config = configparser.ConfigParser()
+        config.read('lang.conf')
+        return(config.sections())
+    except:
+        return(['česky'])
+
+def nacti_text(jazyk):
     # načte nastavení textových proměnných ze souboru
     texty = []
     try:
         config = configparser.ConfigParser()
         config.read('lang.conf')
-        texty.append(config.get('česky','t0'))
-        texty.append(config.get('česky','t1'))
-        texty.append(config.get('česky','t2'))
-        texty.append(config.get('česky','t3'))
-        texty.append(config.get('česky','t4'))
-        texty.append(config.get('česky','t5'))
-        texty.append(config.get('česky','t6'))
-        texty.append(config.get('česky','t7'))
-        texty.append(config.get('česky','t8'))
-        texty.append(config.get('česky','t9'))
-        texty.append(config.get('česky','t10'))
-        texty.append(config.get('česky','t11'))
-        texty.append(config.get('česky','t12'))
-        texty.append(config.get('česky','t13'))
-        texty.append(config.get('česky','t14'))
-        texty.append(config.get('česky','t15'))
+        texty.append(config.get(jazyk,'t0'))
+        texty.append(config.get(jazyk,'t1'))
+        texty.append(config.get(jazyk,'t2'))
+        texty.append(config.get(jazyk,'t3'))
+        texty.append(config.get(jazyk,'t4'))
+        texty.append(config.get(jazyk,'t5'))
+        texty.append(config.get(jazyk,'t6'))
+        texty.append(config.get(jazyk,'t7'))
+        texty.append(config.get(jazyk,'t8'))
+        texty.append(config.get(jazyk,'t9'))
+        texty.append(config.get(jazyk,'t10'))
+        texty.append(config.get(jazyk,'t11'))
+        texty.append(config.get(jazyk,'t12'))
+        texty.append(config.get(jazyk,'t13'))
+        texty.append(config.get(jazyk,'t14'))
+        texty.append(config.get(jazyk,'t15'))
         return(texty)
     except:
         print('chyba jazykového souboru, vytvořen nový')

@@ -38,10 +38,9 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/13 JP - dokončeni vzhledu okna nastavení, úpravy layoutů
 # # 2022/12/14 JP - dokončení okna nastavení, funkční tlačítka ulož a zpět, kromě přepínání jazyka
 # # 2022/12/15 JP - všechny texty se načítají ze souboru, zatím nelze přepínat jazyky
+# # 2022/12/16 JP - dokončení výběru jazyk
 ################################
-# co dodělat: 
-# textové popisky všechny do souboru jazykových mutací a doprogramování výběru jazyka
-################################
+
 
 import marble_funkce
 
@@ -98,46 +97,42 @@ class MainWindow(QMainWindow):
         self.vytvor_mrizku() # vytvoří herní mřížku
         
         # vytvoření widgetů pro okno nastavení
-        self.label_sirka_matice = QLabel(texty[6] + str(sirka_matice))
+        self.label_sirka_matice = QLabel()
         self.sl_sirka_matice = QSlider(Qt.Orientation.Horizontal)
         self.sl_sirka_matice.setRange(5,15)
-        self.sl_sirka_matice.setValue(sirka_matice)
         self.sl_sirka_matice.valueChanged[int].connect(self.changeValue_sirka_matice)
         
-        self.label_pocet_barev = QLabel(texty[7] + str(pocet_barev))
+        self.label_pocet_barev = QLabel()
         self.sl_pocet_barev = QSlider(Qt.Orientation.Horizontal)
         self.sl_pocet_barev.setRange(3,11)
-        self.sl_pocet_barev.setValue(pocet_barev)
         self.sl_pocet_barev.valueChanged[int].connect(self.changeValue_pocet_barev)
         
-        self.label_prirustek = QLabel(texty[8] + str(prirustek))
+        self.label_prirustek = QLabel()
         self.sl_prirustek = QSlider(Qt.Orientation.Horizontal)
         self.sl_prirustek.setRange(3,10)
-        self.sl_prirustek.setValue(prirustek)
         self.sl_prirustek.valueChanged[int].connect(self.changeValue_prirustek)
         
-        self.label_min_rada = QLabel(texty[9] + str(min_rada))
+        self.label_min_rada = QLabel()
         self.sl_min_rada = QSlider(Qt.Orientation.Horizontal)
         self.sl_min_rada.setRange(3,sirka_matice)
-        self.sl_min_rada.setValue(min_rada)
         self.sl_min_rada.valueChanged[int].connect(self.changeValue_min_rada)
         
-        self.label_zisk = QLabel(texty[10])
-        self.txt_zisk = QLineEdit(str(zisk)[1:-1])
+        self.label_zisk = QLabel()
+        self.txt_zisk = QLineEdit()
         
-        self.label_adresa_obrazku = QLabel(texty[11])
-        self.txt_adresa_obrazku = QLineEdit(adresa_obrazku)
+        self.label_adresa_obrazku = QLabel()
+        self.txt_adresa_obrazku = QLineEdit()
         
-        self.label_adresa_vybranych_obrazku = QLabel(texty[12])
-        self.txt_adresa_vybranych_obrazku = QLineEdit(adresa_vybranych_obrazku)
+        self.label_adresa_vybranych_obrazku = QLabel()
+        self.txt_adresa_vybranych_obrazku = QLineEdit()
         
-        self.label_jazyk = QLabel(texty[13])
+        self.label_jazyk = QLabel()
         self.cb_jazyk = QComboBox()
         self.cb_jazyk.addItems(jazyky)
         
-        self.btn_uloz = QPushButton(texty[14])
+        self.btn_uloz = QPushButton()
         self.btn_uloz.clicked.connect(self.uloz_stisk)
-        self.btn_zpet = QPushButton(texty[15])
+        self.btn_zpet = QPushButton()
         self.btn_zpet.clicked.connect(self.zpet_stisk)
         
         #vytvoření časovačů
@@ -204,29 +199,51 @@ class MainWindow(QMainWindow):
     
     def changeValue_sirka_matice(self, value):
         # akce při posunu slideru šířka matice
-        self.label_sirka_matice.setText(texty[6] + str(value))
+        self.label_sirka_matice.setText(texty[6] + ' ' + str(value))
         self.sl_min_rada.setRange(3,value)
         if self.sl_min_rada.value() > value:
-            self.label_min_rada.setText(texty[9] + str(value))
+            self.label_min_rada.setText(texty[9] + ' ' + str(value))
             self.sl_min_rada.setValue(value)
     
     def changeValue_pocet_barev(self, value):
         # akce při posunu slideru počet barev
-        self.label_pocet_barev.setText(texty[7] + str(value))
+        self.label_pocet_barev.setText(texty[7] + ' ' + str(value))
     
     def changeValue_prirustek(self, value):
         # akce při posunu slideru přírůstek kuliček
-        self.label_prirustek.setText(texty[8] + str(value))
+        self.label_prirustek.setText(texty[8] + ' ' + str(value))
     
     def changeValue_min_rada(self, value):
         # akce při posunu slideru minimální řada pro smazání
-        self.label_min_rada.setText(texty[9] + str(value))
+        self.label_min_rada.setText(texty[9] + ' ' + str(value))
     
     def nastaveni_stisk(self):
-        # akce při stisku tlačítka Nastavení  -----------------nastavit posuvníky podle aktuálních hodnot-------------------
+        # akce při stisku tlačítka Nastaven
+        # skryj okno hry
         self.widget_hra.setVisible(False)
+        # nastav velikost okna
         self.setFixedWidth(418)
         self.setFixedHeight(270)
+        # nastav texty
+        self.label_sirka_matice.setText(texty[6] + ' ' + str(sirka_matice))
+        self.label_pocet_barev.setText(texty[7] + ' ' + str(pocet_barev))
+        self.label_prirustek.setText(texty[8] + ' ' + str(prirustek))
+        self.label_min_rada.setText(texty[9] + ' ' + str(min_rada))
+        self.label_zisk.setText(texty[10])
+        self.label_adresa_obrazku.setText(texty[11])
+        self.label_adresa_vybranych_obrazku.setText(texty[12] + ' ')
+        self.label_jazyk.setText(texty[13])
+        self.btn_uloz.setText(texty[14])
+        self.btn_zpet.setText(texty[15])
+        # nastav hodnoty posuvníku a polí
+        self.sl_sirka_matice.setValue(sirka_matice)
+        self.sl_pocet_barev.setValue(pocet_barev)
+        self.sl_prirustek.setValue(prirustek)
+        self.sl_min_rada.setValue(min_rada)
+        self.txt_zisk.setText(str(zisk)[1:-1])
+        self.txt_adresa_obrazku.setText(adresa_obrazku)
+        self.txt_adresa_vybranych_obrazku.setText(adresa_vybranych_obrazku)
+        self.cb_jazyk.setCurrentText(jazyk)
         self.widget_nastaveni.setVisible(True)
         
     def zpet_stisk(self):
@@ -262,14 +279,24 @@ class MainWindow(QMainWindow):
         self.widget_nastaveni.setVisible(False)
         self.nastav_okno()
         self.vytvor_mrizku()
+        self.nastav_jazyk()
         self.widget_hra.setVisible(True)
-        
+    
+    def nastav_jazyk(self):
+        # Načte a nastaví nový jazyk
+        global texty
+        texty = marble_funkce.nacti_text(jazyk)
+        self.setWindowTitle(texty[0])
+        self.btn_nova_hra.setText(texty[1])
+        self.btn_nastaveni.setText(texty[3])
+    
     def nova_hra_stisk(self):
-        # Přepiš tlačítko na ukonči hru, deaktivuj tlačítko nastavení, přidej na desku první kuličky
         if self.hra_bezi:
+            # konec hry
             self.hra_bezi = False
             self.btn_nova_hra.setText(texty[1])
             self.btn_nastaveni.setEnabled(True)
+            self.oznam_konec()
         else:
             # start hry
             self.body = 0
@@ -287,7 +314,7 @@ class MainWindow(QMainWindow):
             for j in range(sirka_matice):
                 self.kulicky[i][j].setPixmap(self.barva[self.pole[i][j]])
     
-    def vyber_kulicky_stisk(self, event):   #----------------pamatuje si asi stisky z minulého kola
+    def vyber_kulicky_stisk(self, event):
         # akce při výběru kuličky nebo prázdného pole
         if self.hra_bezi and self.hrac_je_na_tahu:
             # pokud probíhá hra a hráč je na tahu tak pokračuj, jinak nic
@@ -308,6 +335,7 @@ class MainWindow(QMainWindow):
                     self.cil_pozice = [i, j]
                     self.kulicky[i][j].setPixmap(self.barva_vyber[0])
                     je_cesta, self.cesta = marble_funkce.najdi_cestu(self.pole, self.pozice_vybrane_kulicky, self.cil_pozice)
+                    self.vybrana_kulicka = False
                     if je_cesta:
                         self.animuj()
                     else:
@@ -358,7 +386,7 @@ class MainWindow(QMainWindow):
         # Oznámení počtu bodů na konci hry
         dlg = QMessageBox(self)
         dlg.setWindowTitle(texty[4])
-        dlg.setText(texty[5] + str(self.body))
+        dlg.setText(texty[5] + ' ' + str(self.body))
         button = dlg.exec()
     
     def herni_kolo(self):
@@ -386,10 +414,10 @@ class MainWindow(QMainWindow):
                 self.hrac_je_na_tahu = True
 
 
-# Načtení proměnných které je možné měnit v nastavení a popisků
+# Načtení textů a parametrů hry
 sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk = marble_funkce.nacti_data()
-jazyky = ['česky','english']
-texty = marble_funkce.nacti_text()
+jazyky = marble_funkce.nacti_jazyky()
+texty = marble_funkce.nacti_text(jazyk)
 
 # a jedeeem
 app = QApplication(sys.argv)
