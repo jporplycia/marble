@@ -52,9 +52,8 @@ def nacti_data():
         min_rada = int(config.get('Nastaveni','min_rada', fallback = 5))
         zisk = [int(n) for n in config.get('Nastaveni','zisk', fallback = '1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105, 120').split(',')]
         adresa_obrazku = config.get('Nastaveni','adresa_obrazku', fallback = 'images/a')
-        adresa_vybranych_obrazku = config.get('Nastaveni','adresa_vybranych_obrazku', fallback = 'images/a1')
         jazyk = config.get('Nastaveni','jazyk', fallback = 'česky')
-        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk)
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, jazyk)
     except:
         print('chyba souboru, vytvořen nový')
         sirka_matice = 8
@@ -63,12 +62,11 @@ def nacti_data():
         min_rada = 5
         zisk = [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105, 120]
         adresa_obrazku = 'images/a'
-        adresa_vybranych_obrazku = 'images/a1'
         jazyk = 'česky'
-        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk)
-        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk)
+        uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, jazyk)
+        return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, jazyk)
 
-def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk):
+def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, jazyk):
     #uloží nastavení proměnných do souboru
     config = configparser.ConfigParser()
     config['Nastaveni'] = {'sirka_matice': sirka_matice, 
@@ -77,7 +75,6 @@ def uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obraz
                         'min_rada': min_rada,
                         'zisk': str(zisk)[1:-1],
                         'adresa_obrazku': adresa_obrazku,
-                        'adresa_vybranych_obrazku': adresa_vybranych_obrazku,
                         'jazyk': jazyk}
     with open('data.conf', 'w') as configfile:
         config.write(configfile)
@@ -112,7 +109,6 @@ def nacti_text(jazyk):
         texty.append(config.get(jazyk,'t12'))
         texty.append(config.get(jazyk,'t13'))
         texty.append(config.get(jazyk,'t14'))
-        texty.append(config.get(jazyk,'t15'))
         return(texty)
     except:
         print('chyba jazykového souboru, vytvořen nový')
@@ -134,8 +130,7 @@ def nacti_text(jazyk):
                         't11': texty[11],
                         't12': texty[12],
                         't13': texty[13],
-                        't14': texty[14],
-                        't15': texty[15]
+                        't14': texty[14]
                         }
         with open('lang.conf', 'w') as configfile:
             config.write(configfile)

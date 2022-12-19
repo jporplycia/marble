@@ -39,6 +39,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/14 JP - dokončení okna nastavení, funkční tlačítka ulož a zpět, kromě přepínání jazyka
 # # 2022/12/15 JP - všechny texty se načítají ze souboru, zatím nelze přepínat jazyky
 # # 2022/12/16 JP - dokončení výběru jazyk
+# # 2022/12/19 JP - přidání další sady obrázků, zjednodušení výběru obrázků - spojení výběru obrázků a vybraných obrázků
 ################################
 
 
@@ -46,7 +47,7 @@ import marble_funkce
 
 import sys, time
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QLCDNumber, QMessageBox, QSlider, QLineEdit, QComboBox
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import QTimer, Qt
 
 class MainWindow(QMainWindow):
@@ -61,12 +62,7 @@ class MainWindow(QMainWindow):
         self.hra_bezi, self.hrac_je_na_tahu, self.vybrana_kulicka = False, False, False
         
         # načtení obrázků kuliček
-        for i in range(pocet_barev + 1):
-            adresa = adresa_obrazku + str(i).zfill(2) + '.png'
-            self.barva.append(QPixmap(adresa).scaledToWidth(self.sirka_pole))
-        for i in range(pocet_barev + 1):
-            adresa = adresa_vybranych_obrazku + str(i).zfill(2) + '.png'
-            self.barva_vyber.append(QPixmap(adresa).scaledToWidth(self.sirka_pole))
+        self.nacti_obrazky()
             
         # vytvoření okna a herního pole
         self.nastav_okno()
@@ -123,9 +119,6 @@ class MainWindow(QMainWindow):
         self.label_adresa_obrazku = QLabel()
         self.txt_adresa_obrazku = QLineEdit()
         
-        self.label_adresa_vybranych_obrazku = QLabel()
-        self.txt_adresa_vybranych_obrazku = QLineEdit()
-        
         self.label_jazyk = QLabel()
         self.cb_jazyk = QComboBox()
         self.cb_jazyk.addItems(jazyky)
@@ -161,10 +154,8 @@ class MainWindow(QMainWindow):
         self.layout_nastaveni_mrizka.addWidget(self.txt_zisk,4,1)
         self.layout_nastaveni_mrizka.addWidget(self.label_adresa_obrazku,5,0)
         self.layout_nastaveni_mrizka.addWidget(self.txt_adresa_obrazku,5,1)
-        self.layout_nastaveni_mrizka.addWidget(self.label_adresa_vybranych_obrazku,6,0)
-        self.layout_nastaveni_mrizka.addWidget(self.txt_adresa_vybranych_obrazku,6,1)
-        self.layout_nastaveni_mrizka.addWidget(self.label_jazyk,7,0)
-        self.layout_nastaveni_mrizka.addWidget(self.cb_jazyk,7,1)
+        self.layout_nastaveni_mrizka.addWidget(self.label_jazyk,6,0)
+        self.layout_nastaveni_mrizka.addWidget(self.cb_jazyk,6,1)
         self.layout_nastaveni_vodorovny.addWidget(self.btn_zpet)
         self.layout_nastaveni_vodorovny.addWidget(self.btn_uloz)
         self.layout_nastaveni_svisly.addLayout(self.layout_nastaveni_mrizka)
@@ -176,11 +167,22 @@ class MainWindow(QMainWindow):
         self.widget_hlavni.setLayout(self.layout_hlavni)
         self.setCentralWidget(self.widget_hlavni)
         
+    def nacti_obrazky(self):
+        # načtení obrázků kuliček
+        self.barva, self.barva_vyber = [], []
+        for i in range(pocet_barev + 1):
+            adresa = adresa_obrazku + str(i).zfill(2) + '.png'
+            self.barva.append(QPixmap(adresa).scaledToWidth(self.sirka_pole))
+        for i in range(pocet_barev + 1):
+            adresa = adresa_obrazku + '1' + str(i).zfill(2) + '.png'
+            self.barva_vyber.append(QPixmap(adresa).scaledToWidth(self.sirka_pole))
+    
     def nastav_okno(self):
         # vytvoření okna a herního pole
         self.setFixedWidth(self.sirka_pole * sirka_matice + 2 * self.odsazeni_zleva)
         self.setFixedHeight(self.sirka_pole * sirka_matice + self.odsazeni_shora + self.odsazeni_zleva)
         self.setWindowTitle(texty[0])
+        self.setWindowIcon(QIcon(adresa_obrazku + '01.png'))
         # vytvoření herního pole
         self.pole = marble_funkce.vytvor_pole(sirka_matice)
     
@@ -223,7 +225,7 @@ class MainWindow(QMainWindow):
         self.widget_hra.setVisible(False)
         # nastav velikost okna
         self.setFixedWidth(418)
-        self.setFixedHeight(270)
+        self.setFixedHeight(230)
         # nastav texty
         self.label_sirka_matice.setText(texty[6] + ' ' + str(sirka_matice))
         self.label_pocet_barev.setText(texty[7] + ' ' + str(pocet_barev))
@@ -231,10 +233,9 @@ class MainWindow(QMainWindow):
         self.label_min_rada.setText(texty[9] + ' ' + str(min_rada))
         self.label_zisk.setText(texty[10])
         self.label_adresa_obrazku.setText(texty[11])
-        self.label_adresa_vybranych_obrazku.setText(texty[12] + ' ')
-        self.label_jazyk.setText(texty[13])
-        self.btn_uloz.setText(texty[14])
-        self.btn_zpet.setText(texty[15])
+        self.label_jazyk.setText(texty[12])
+        self.btn_uloz.setText(texty[13])
+        self.btn_zpet.setText(texty[14])
         # nastav hodnoty posuvníku a polí
         self.sl_sirka_matice.setValue(sirka_matice)
         self.sl_pocet_barev.setValue(pocet_barev)
@@ -242,7 +243,6 @@ class MainWindow(QMainWindow):
         self.sl_min_rada.setValue(min_rada)
         self.txt_zisk.setText(str(zisk)[1:-1])
         self.txt_adresa_obrazku.setText(adresa_obrazku)
-        self.txt_adresa_vybranych_obrazku.setText(adresa_vybranych_obrazku)
         self.cb_jazyk.setCurrentText(jazyk)
         self.widget_nastaveni.setVisible(True)
         
@@ -254,7 +254,7 @@ class MainWindow(QMainWindow):
     
     def uloz_stisk(self):
         # akce při stisku tlačítka ulož v nastavení
-        global sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk
+        global sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, jazyk
         # smaž widgety kuliček
         for i in range(sirka_matice):
             for j in range(sirka_matice):
@@ -271,12 +271,12 @@ class MainWindow(QMainWindow):
             except:
                 pass
         adresa_obrazku = self.txt_adresa_obrazku.text()
-        adresa_vybranych_obrazku = self.txt_adresa_vybranych_obrazku.text()
         jazyk = self.cb_jazyk.currentText()
         # ulož nové proměnné
-        marble_funkce.uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk)
+        marble_funkce.uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, jazyk)
         # skryj okno nastavení a nastav nově okno hry
         self.widget_nastaveni.setVisible(False)
+        self.nacti_obrazky()
         self.nastav_okno()
         self.vytvor_mrizku()
         self.nastav_jazyk()
@@ -415,7 +415,7 @@ class MainWindow(QMainWindow):
 
 
 # Načtení textů a parametrů hry
-sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, adresa_vybranych_obrazku, jazyk = marble_funkce.nacti_data()
+sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, jazyk = marble_funkce.nacti_data()
 jazyky = marble_funkce.nacti_jazyky()
 texty = marble_funkce.nacti_text(jazyk)
 
