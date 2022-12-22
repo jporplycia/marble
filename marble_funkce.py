@@ -51,7 +51,7 @@ def nacti_data():
         prirustek = int(config.get('Nastaveni','prirustek', fallback = 3))
         min_rada = int(config.get('Nastaveni','min_rada', fallback = 5))
         zisk = [int(n) for n in config.get('Nastaveni','zisk', fallback = '1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105, 120').split(',')]
-        adresa_obrazku = config.get('Nastaveni','adresa_obrazku', fallback = 'images/a')
+        adresa_obrazku = config.get('Nastaveni','adresa_obrazku', fallback = 'a')
         jazyk = config.get('Nastaveni','jazyk', fallback = 'česky')
         return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, jazyk)
     except:

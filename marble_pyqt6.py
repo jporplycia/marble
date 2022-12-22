@@ -40,6 +40,7 @@ možnost hrát na různých platformách (windows, linux, apple, webovky, androi
 # # 2022/12/15 JP - všechny texty se načítají ze souboru, zatím nelze přepínat jazyky
 # # 2022/12/16 JP - dokončení výběru jazyk
 # # 2022/12/19 JP - přidání další sady obrázků, zjednodušení výběru obrázků - spojení výběru obrázků a vybraných obrázků
+# # 2022/12/22 JP - doplnění zvuků
 ################################
 
 
@@ -48,7 +49,8 @@ import marble_funkce
 import sys, time
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QLCDNumber, QMessageBox, QSlider, QLineEdit, QComboBox
 from PyQt6.QtGui import QPixmap, QIcon
-from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtCore import QTimer, Qt, QUrl
+from PyQt6.QtMultimedia import QSoundEffect,QAudioOutput, QMediaPlayer
 
 class MainWindow(QMainWindow):
 
@@ -136,6 +138,19 @@ class MainWindow(QMainWindow):
         self.pauza_az= QTimer()
         self.pauza_az.timeout.connect(self.animuj_zmizeni)
         
+        #vytvoření zvukových efektů
+        self.snd_klik = QSoundEffect()
+        self.snd_klik.setSource(QUrl.fromLocalFile('sounds/01.wav'))
+        self.snd_posun = QSoundEffect()
+        self.snd_posun.setSource(QUrl.fromLocalFile('sounds/02.wav'))
+        self.snd_rada = QSoundEffect()
+        self.snd_rada.setSource(QUrl.fromLocalFile('sounds/03.wav'))
+        self.snd_konec = QSoundEffect()
+        self.snd_konec.setSource(QUrl.fromLocalFile('sounds/04.wav'))
+        self.snd_konec.setVolume(0.3)
+        self.snd_necesta = QSoundEffect()
+        self.snd_necesta.setSource(QUrl.fromLocalFile('sounds/05.wav'))
+        
         # umístění do layoutů
         self.layout_hra_vodorovny.addWidget(self.btn_nova_hra)
         self.layout_hra_vodorovny.addWidget(self.lcd)
@@ -171,10 +186,10 @@ class MainWindow(QMainWindow):
         # načtení obrázků kuliček
         self.barva, self.barva_vyber = [], []
         for i in range(pocet_barev + 1):
-            adresa = adresa_obrazku + str(i).zfill(2) + '.png'
+            adresa = 'images/' + adresa_obrazku + str(i).zfill(2) + '.png'
             self.barva.append(QPixmap(adresa).scaledToWidth(self.sirka_pole))
         for i in range(pocet_barev + 1):
-            adresa = adresa_obrazku + '1' + str(i).zfill(2) + '.png'
+            adresa = 'images/' + adresa_obrazku + '1' + str(i).zfill(2) + '.png'
             self.barva_vyber.append(QPixmap(adresa).scaledToWidth(self.sirka_pole))
     
     def nastav_okno(self):
@@ -182,7 +197,7 @@ class MainWindow(QMainWindow):
         self.setFixedWidth(self.sirka_pole * sirka_matice + 2 * self.odsazeni_zleva)
         self.setFixedHeight(self.sirka_pole * sirka_matice + self.odsazeni_shora + self.odsazeni_zleva)
         self.setWindowTitle(texty[0])
-        self.setWindowIcon(QIcon(adresa_obrazku + '01.png'))
+        self.setWindowIcon(QIcon('images/' + adresa_obrazku + '01.png'))
         # vytvoření herního pole
         self.pole = marble_funkce.vytvor_pole(sirka_matice)
     
@@ -220,7 +235,7 @@ class MainWindow(QMainWindow):
         self.label_min_rada.setText(texty[9] + ' ' + str(value))
     
     def nastaveni_stisk(self):
-        # akce při stisku tlačítka Nastaven
+        # akce při stisku tlačítka Nastavení
         # skryj okno hry
         self.widget_hra.setVisible(False)
         # nastav velikost okna
@@ -327,6 +342,7 @@ class MainWindow(QMainWindow):
                 if self.pole[i][j] > 0:
                     # změna výběru kuličky, původní dej zpět, označ novou
                     self.kulicky[self.pozice_vybrane_kulicky[0]][self.pozice_vybrane_kulicky[1]].setPixmap(self.barva[self.pole[self.pozice_vybrane_kulicky[0]][self.pozice_vybrane_kulicky[1]]])
+                    self.snd_klik.play()
                     self.pozice_vybrane_kulicky = [i, j]
                     self.kulicky[i][j].setPixmap(self.barva_vyber[self.pole[i][j]])
                     self.hrac_je_na_tahu = True
@@ -340,10 +356,12 @@ class MainWindow(QMainWindow):
                         self.animuj()
                     else:
                         # cesta nenalezena, zruš výběr kuliček
+                        self.snd_necesta.play()
                         self.pauza.start(self.cas_pauzy)
             else:
                 # vybíráme kuličku, kterou chceme přesunout
                 if self.pole[i][j] > 0:
+                    self.snd_klik.play()
                     self.pozice_vybrane_kulicky = [i, j]
                     self.vybrana_kulicka = True
                     self.kulicky[i][j].setPixmap(self.barva_vyber[self.pole[i][j]])
@@ -362,6 +380,8 @@ class MainWindow(QMainWindow):
         self.pole[self.cesta[-1][0]][self.cesta[-1][1]] = self.pole[self.cesta[0][0]][self.cesta[0][1]]
         self.pole[self.cesta[0][0]][self.cesta[0][1]] = 0
         self.krok = 0
+        self.snd_posun.setLoopCount(len(self.cesta)-1)
+        self.snd_posun.play()
         self.pauza_krok.start(self.cas_posunu)
     
     def krok_krok(self):
@@ -370,7 +390,7 @@ class MainWindow(QMainWindow):
             self.herni_kolo()
         else:
             self.kulicky[self.cesta[self.krok][0]][self.cesta[self.krok][1]].setPixmap(self.barva[0])
-            self.kulicky[self.cesta[self.krok+1][0]][self.cesta[self.krok+1][1]].setPixmap(self.barva[self.pole[self.cesta[-1][0]][self.cesta[-1][1]]])        
+            self.kulicky[self.cesta[self.krok+1][0]][self.cesta[self.krok+1][1]].setPixmap(self.barva[self.pole[self.cesta[-1][0]][self.cesta[-1][1]]])
             self.krok += 1
     
     def animuj_zmizeni(self):
@@ -384,6 +404,7 @@ class MainWindow(QMainWindow):
     
     def oznam_konec(self):
         # Oznámení počtu bodů na konci hry
+        self.snd_konec.play()
         dlg = QMessageBox(self)
         dlg.setWindowTitle(texty[4])
         dlg.setText(texty[5] + ' ' + str(self.body))
@@ -402,6 +423,7 @@ class MainWindow(QMainWindow):
             for misto in self.smazat_mista:
                 self.pole[misto[0]][misto[1]] = 0
             self.krok = 0
+            self.snd_rada.play()
             self.pauza_az.start(self.rychlost_animace)
         else:
             # pokud se pole zaplnilo, ukonči hru
