@@ -61,7 +61,7 @@ def nacti_data():
         prirustek = 3
         min_rada = 5
         zisk = [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105, 120]
-        adresa_obrazku = 'images/a'
+        adresa_obrazku = 'a'
         jazyk = 'česky'
         uloz_data(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, jazyk)
         return(sirka_matice, pocet_barev, prirustek, min_rada, zisk, adresa_obrazku, jazyk)
