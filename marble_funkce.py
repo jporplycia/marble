@@ -267,10 +267,10 @@ def zkontroluj_rady(pole, min_rada, zisk):
             smazat_mista_bez_duplicit.append(i)
     # zjištění počtu bodů
     if len(smazat_mista_bez_duplicit) >= min_rada:
-        if len(smazat_mista_bez_duplicit) - min_rada >= len(zisk): # pokud není řada zisků dostatečně dlouhá tak použít poslední hodnotu
-            pocet_bodu = zisk[-1]
-        else:
+        if len(smazat_mista_bez_duplicit) - min_rada < len(zisk): # pokud není řada zisků dostatečně dlouhá tak použít poslední hodnotu
             pocet_bodu = zisk[len(smazat_mista_bez_duplicit) - min_rada]
+        else:
+            pocet_bodu = zisk[-1]
     else:
         pocet_bodu = 0
     return(smazat_mista_bez_duplicit, pocet_bodu)
